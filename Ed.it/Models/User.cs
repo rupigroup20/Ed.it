@@ -25,10 +25,9 @@ namespace Ed.it.Models
         public List<TagsUser> TagsScore { get; set; }//רשימת התגים של היוזר עם הניקוד שלו
         DBservices dBservices = new DBservices();
 
-        public User(string UserName, string Password)
+        public User()
         {
-            this.UserName = UserName;
-            this.Password = Password;
+      
         }
 
 

@@ -77,7 +77,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _Teacher values('{user.UserName}','{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.Bdate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
+            string query = $@"INSERT INTO _User values('{user.UserName}','{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
             return numEffected;
@@ -109,7 +109,7 @@ public class DBservices
         User user = new User();
         con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
         string query = $@"SELECT * 
-                          FROM _Teacher
+                          FROM _User
                           WHERE UserName='{UserName}' and Password='{Password}'";
         DataTable dataTable = new DataTable();
         da = new SqlDataAdapter(query, con);
@@ -125,7 +125,7 @@ public class DBservices
             user.UrlPicture= dataTable.Rows[0]["UrlPicture"].ToString();
             user.SchoolType= dataTable.Rows[0]["SchoolType"].ToString();
             user.Email = dataTable.Rows[0]["Email"].ToString();
-            user.Bdate= DateTime.Parse( dataTable.Rows[0]["Bdate"].ToString());
+            user.BDate=  dataTable.Rows[0]["Bdate"].ToString();
             return user;
         }
         else

@@ -13,7 +13,7 @@ namespace Ed.it.Models
         public string Email { get; set; }
         public string SchoolType { get; set; }
         public string TeacherType { get; set; }
-        public DateTime Bdate { get; set; }
+        public string BDate { get; set; }
         public string AboutMe { get; set; }
         public string UrlPicture { get; set; }
 
@@ -43,7 +43,7 @@ namespace Ed.it.Models
         /// <summary>
         /// קבלת פרטי משתמש וולידצית משתמש
         /// </summary>
-        internal User GetUserDetails(string UserName, string Password)
+        internal User GetUserDetails()
         {
             User user = new User();
             user= dBservices.GetUserDetails(UserName,Password);

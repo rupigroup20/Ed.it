@@ -16,8 +16,8 @@ namespace Ed.it.Models
         public string BDate { get; set; }
         public string AboutMe { get; set; }
         public string UrlPicture { get; set; }
+        public HttpContext FormDataPic { get; set; }
 
-  
 
         public List<Content> ContentsUser { get; set; }//תכנים שהעלה היוזר
         public List<string> TagsUser { get; set; }//תגים שהיוזר סימן כאהובים
@@ -37,6 +37,10 @@ namespace Ed.it.Models
         /// </summary>
         internal void CreateUser()
         {
+            if(UrlPicture!="")//יש תמונת פרופיל
+            {
+                UrlPicture= UserName + "." + UrlPicture.Split('\\').Last().Split('.').Last();
+            }
             dBservices.CreateUser(this);
         }
 

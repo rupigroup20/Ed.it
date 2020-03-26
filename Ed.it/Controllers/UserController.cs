@@ -35,14 +35,14 @@ namespace Ed.it.Controllers
         [HttpPost]
         [Route("api/User/CreateUser")]
         public bool CreateUser([FromBody]User NewUser)
-        {           
-            //NewUser.CreateUser();
+        {
+            NewUser.CreateUser();
             return true;
         }
 
         [HttpPost]
-        [Route("api/AddPic")]
-        public HttpResponseMessage UploadPic()//string UserName
+        [Route("api/AddPic/{UserName}")]
+        public HttpResponseMessage UploadPic(string UserName)
         {
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;
@@ -62,7 +62,7 @@ namespace Ed.it.Controllers
                     {
                         // Construct file save path  
                         //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-                        string fname = httpPostedFile.FileName.Split('\\').Last();
+                        string fname = UserName + "."+ httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
                         var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
                         // Save the uploaded file  
                         httpPostedFile.SaveAs(fileSavePath);

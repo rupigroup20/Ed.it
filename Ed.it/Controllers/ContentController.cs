@@ -28,7 +28,7 @@ namespace Ed.it.Controllers
 
         [HttpPost]
         [Route("api/UploadContent/{UserID}")]
-        public HttpResponseMessage UploadContent()
+        public HttpResponseMessage UploadContent()//[FromBody]User NewUser
         {
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;

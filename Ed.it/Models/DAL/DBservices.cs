@@ -77,9 +77,16 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _User values('{user.UserName}','{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
+            string query = $@"INSERT INTO _User values('{user.UserID}','{user.UserName}','{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
+
+            for (int i = 0; i < user.TagsUser.Count; i++)
+            {
+                string query2 = $@"INSERT INTO _UseOn values({1},'{user.UserID}', '{user.TagsUser[i]}')";
+                cmd= CreateCommand(query2, con);
+                numEffected += cmd.ExecuteNonQuery();
+            }
             return numEffected;
         }
         catch (Exception ex)

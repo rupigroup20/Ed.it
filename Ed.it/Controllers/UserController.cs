@@ -9,6 +9,8 @@ using System.Web;
 using System.Threading.Tasks;
 using System.IO;
 using System.Web.Hosting;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Ed.it.Controllers
 {
@@ -28,6 +30,16 @@ namespace Ed.it.Controllers
             return NewUser;//אם מחזיר Null אז משתמש הזין פרטים לא נכוננים
         }
 
+        [HttpGet]
+        [Route("api/User/GetTags")]
+        public List<string> GetTags()
+        {
+            DBservices dbs = new DBservices();
+            List<string> Tags = new List<string>();
+            Tags = dbs.GetTags();
+            return Tags;
+
+        }
 
         /// <summary>
         /// יצירת יוזר חדש

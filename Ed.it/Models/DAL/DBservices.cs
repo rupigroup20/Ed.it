@@ -78,13 +78,13 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _User values('{user.UserID}','{user.UserName}','{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
+            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
 
             for (int i = 0; i < user.TagsUser.Count; i++)
             {
-                string query2 = $@"INSERT INTO _UseOn values({1},'{user.UserID}', '{user.TagsUser[i]}')";
+                string query2 = $@"INSERT INTO _UseOn values({1},'{user.Email}', '{user.TagsUser[i]}')";
                 cmd= CreateCommand(query2, con);
                 numEffected += cmd.ExecuteNonQuery();
             }
@@ -112,13 +112,13 @@ public class DBservices
     /// <summary>
     /// בודק אם משתמש קיים
     /// </summary>
-    internal User GetUserDetails(string UserName, string Password)
+    internal User GetUserDetails(string Email, string Password)
     {
         User user = new User();
         con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
         string query = $@"SELECT * 
                           FROM _User
-                          WHERE UserName='{UserName}' and Password='{Password}'";
+                          WHERE Email='{Email}' and Password='{Password}'";
         DataTable dataTable = new DataTable();
         da = new SqlDataAdapter(query, con);
         SqlCommandBuilder builder = new SqlCommandBuilder(da);
@@ -128,12 +128,13 @@ public class DBservices
         cmd = CreateCommand(query, con);
         if (dataTable.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
         {
-            user.Name = dataTable.Rows[0]["Name"].ToString();
-            user.UserName = dataTable.Rows[0]["UserName"].ToString();
+            //user.Name = dataTable.Rows[0]["Name"].ToString();
+            //user.UserName = dataTable.Rows[0]["UserName"].ToString();
             user.UrlPicture= dataTable.Rows[0]["UrlPicture"].ToString();
             user.SchoolType= dataTable.Rows[0]["SchoolType"].ToString();
             user.Email = dataTable.Rows[0]["Email"].ToString();
             user.BDate=  dataTable.Rows[0]["Bdate"].ToString();
+            //Password ???
             return user;
         }
         else

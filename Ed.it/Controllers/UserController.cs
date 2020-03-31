@@ -56,8 +56,8 @@ namespace Ed.it.Controllers
         }
 
         [HttpPost]
-        [Route("api/AddPic/{UserName}")]
-        public HttpResponseMessage UploadPic(string UserName)
+        [Route("api/AddPic/{Name}")]
+        public HttpResponseMessage UploadPic(string Name)
         {
             CultureInfo ci = new CultureInfo("en-US");
             Thread.CurrentThread.CurrentCulture = ci;
@@ -78,20 +78,22 @@ namespace Ed.it.Controllers
                         // this is an example of how you can extract addional values from the Ajax call
                         string name = httpContext.Request.Form["user"];
 
+
                         if (httpPostedFile != null)
                         {
                             // Construct file save path  
                             //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-                            string fname = UserName + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
+                            string fname = Name + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
                             var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
                             // Save the uploaded file  
                             httpPostedFile.SaveAs(fileSavePath);
                             imageLinks.Add("uploadedFiles/" + fname);
+
                         }
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString()); //Will display localized message
                 ExceptionLogger el = new ExceptionLogger(ex);

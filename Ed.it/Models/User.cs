@@ -8,8 +8,8 @@ namespace Ed.it.Models
 {
     public class User
     {
-        public string UserID { get; set; }
-        public string UserName { get; set; }
+        //public string UserID { get; set; }
+        //public string UserName { get; set; }
         public string Password { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
@@ -41,7 +41,7 @@ namespace Ed.it.Models
         {
             if(UrlPicture!="")//יש תמונת פרופיל
             {
-                UrlPicture= UserName + "." + UrlPicture.Split('\\').Last().Split('.').Last();
+                UrlPicture= Name + "." + UrlPicture.Split('\\').Last().Split('.').Last();
             }
             dBservices.CreateUser(this);
         }
@@ -52,7 +52,7 @@ namespace Ed.it.Models
         internal User GetUserDetails()
         {
             User user = new User();
-            user= dBservices.GetUserDetails(UserName,Password);
+            user= dBservices.GetUserDetails(Email,Password);
             return user;        
          
         }

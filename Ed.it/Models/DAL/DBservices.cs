@@ -1,5 +1,6 @@
 ﻿using Ed.it.Models;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.Configuration;
@@ -123,11 +124,13 @@ public class DBservices
         {
             //user.Name = dataTable.Rows[0]["Name"].ToString();
             //user.UserName = dataTable.Rows[0]["UserName"].ToString();
+            user.Name= dataTable.Rows[0]["Name"].ToString();
             user.UrlPicture= dataTable.Rows[0]["UrlPicture"].ToString();
             user.SchoolType= dataTable.Rows[0]["SchoolType"].ToString();
             user.Email = dataTable.Rows[0]["Email"].ToString();
             user.BDate=  dataTable.Rows[0]["Bdate"].ToString();
-            //Password ???
+            user.AboutMe= dataTable.Rows[0]["AboutMe"].ToString();
+            
             return user;
         }
         else
@@ -181,5 +184,45 @@ public class DBservices
 
             }
         }
+    }
+
+    public List<string> GetTags()
+    {
+        List<string> Tags = new List<string>();
+        SqlConnection con = null;
+        string query = "";
+        try
+        {
+            con = Connect("DBConnectionString");
+            query = "select * from _TagsTest";
+            cmd = CreateCommand(query, con);
+            SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    string tag;
+                    tag = (string)dr["TagName"];
+                    Tags.Add(tag);
+                }
+            }
+
+        }
+
+        catch (Exception ex)
+        {
+            // write errors to log file
+            // try to handle the error
+            throw ex;
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                con.Close();
+            }
+        }
+        return Tags;// מחזיר אובייקט מסוג DBServices
     }
 }

@@ -9,10 +9,18 @@ namespace Ed.it.Models
     {
         public string TagName { get; set; }
         public int Score { get; set; }
+        DBservices dBservices = new DBservices();
 
         public TagsUser()
         {
 
+        }
+
+        public List<string> GetTagsList()
+        {
+            List<string> TagsList = new List<string>();
+            TagsList=dBservices.GetTags();
+            return TagsList;
         }
     }
 }

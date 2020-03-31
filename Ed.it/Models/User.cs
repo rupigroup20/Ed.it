@@ -41,7 +41,7 @@ namespace Ed.it.Models
         {
             if(UrlPicture!="")//יש תמונת פרופיל
             {
-                UrlPicture= Name + "." + UrlPicture.Split('\\').Last().Split('.').Last();
+                UrlPicture= Email.Split('@').First() + "." + UrlPicture.Split('\\').Last().Split('.').Last();
             }
             dBservices.CreateUser(this);
         }

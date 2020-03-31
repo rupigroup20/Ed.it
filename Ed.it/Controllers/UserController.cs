@@ -15,10 +15,16 @@ using System.Web.Http.ExceptionHandling;
 using System.Globalization;
 using System.Threading;
 
+
 namespace Ed.it.Controllers
 {
     public class UserController : ApiController
     {
+        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
+        string UrlLocal = @"C:\Users\programmer\Ed.it\Ed.it\uploadedFiles\\";//ניתוב מקומי
+        bool Local = true;//עובדים על השרת או מקומי
+        
+        
         // GET api/values
         public IEnumerable<string> Get()
         {
@@ -29,18 +35,35 @@ namespace Ed.it.Controllers
         [Route("api/User/GetUserDetails")]
         public User GetUserDetails([FromBody]User NewUser)//
         {
-            NewUser=NewUser.GetUserDetails();
-            return NewUser;//אם מחזיר Null אז משתמש הזין פרטים לא נכוננים
+            try
+            {
+                NewUser = NewUser.GetUserDetails();
+                if (Local)//ניתוב תמונה
+                {
+                    NewUser.UrlPicture = UrlLocal + NewUser.UrlPicture;
+                }
+                else
+                {
+                    NewUser.UrlPicture = UrlServer + NewUser.UrlPicture;
+                }
+                return NewUser;//אם מחזיר Null אז משתמש הזין פרטים לא נכוננים
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+    
         }
+
+    
+
 
         [HttpGet]
         [Route("api/User/GetTags")]
         public List<string> GetTags()
         {
-            DBservices dbs = new DBservices();
-            List<string> Tags = new List<string>();
-            //Tags = dbs.GetTags();
-            return Tags;
+            TagsUser tagsUser = new TagsUser();          
+            return tagsUser.GetTagsList();
 
         }
 
@@ -56,8 +79,8 @@ namespace Ed.it.Controllers
         }
 
         [HttpPost]
-        [Route("api/AddPic/{Name}")]
-        public HttpResponseMessage UploadPic(string Name)
+        [Route("api/AddPic/{Email}")]
+        public HttpResponseMessage UploadPic(string Email)
         {
             CultureInfo ci = new CultureInfo("en-US");
             Thread.CurrentThread.CurrentCulture = ci;
@@ -83,7 +106,7 @@ namespace Ed.it.Controllers
                         {
                             // Construct file save path  
                             //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-                            string fname = Name + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
+                            string fname = Email.Split('@').First() + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
                             var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
                             // Save the uploaded file  
                             httpPostedFile.SaveAs(fileSavePath);

@@ -1,6 +1,5 @@
 ﻿using Ed.it.Models;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.Configuration;
@@ -16,16 +15,10 @@ public class DBservices
     SqlCommand cmd;
     int counter = 0;
 
-
     public DBservices()
     {
-        //
-        // TODO: Add constructor logic here
-        //
+
     }
-
-
-
 
 
 
@@ -187,45 +180,5 @@ public class DBservices
 
             }
         }
-    }
-
-    public List <string> GetTags()
-    {
-        List<string> Tags = new List<string>();
-        SqlConnection con = null;
-        string query = "";
-        try
-        {
-            con = Connect("DBConnectionString");
-             query = "select * from _TagsTest";
-            cmd = CreateCommand(query, con);
-            SqlDataReader dr = cmd.ExecuteReader();
-            if (dr.HasRows)
-            {
-                while (dr.Read())
-                {
-                    string tag;
-                    tag = (string)dr["TagName"];
-                    Tags.Add(tag);
-                }
-            }
-
-        }
-
-        catch (Exception ex)
-        {
-            // write errors to log file
-            // try to handle the error
-            throw ex;
-        }
-
-        finally
-        {
-            if (con != null)
-            {
-                con.Close();
-            }
-        }
-        return Tags;// מחזיר אובייקט מסוג DBServices
     }
 }

@@ -11,6 +11,9 @@ using System.IO;
 using System.Web.Hosting;
 using System.Data;
 using System.Data.SqlClient;
+using System.Web.Http.ExceptionHandling;
+using System.Globalization;
+using System.Threading;
 
 namespace Ed.it.Controllers
 {
@@ -36,7 +39,7 @@ namespace Ed.it.Controllers
         {
             DBservices dbs = new DBservices();
             List<string> Tags = new List<string>();
-            Tags = dbs.GetTags();
+            //Tags = dbs.GetTags();
             return Tags;
 
         }
@@ -56,44 +59,75 @@ namespace Ed.it.Controllers
         [Route("api/AddPic/{UserName}")]
         public HttpResponseMessage UploadPic(string UserName)
         {
+            CultureInfo ci = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
             List<string> imageLinks = new List<string>();
-            var httpContext = HttpContext.Current;
-
-            // Check for any uploaded file  
-            if (httpContext.Request.Files.Count > 0)
+            try
             {
-                //Loop through uploaded files  
-                for (int i = 0; i < httpContext.Request.Files.Count; i++)
+                var httpContext = HttpContext.Current;
+
+                // Check for any uploaded file  
+                if (httpContext.Request.Files.Count > 0)
                 {
-                    HttpPostedFile httpPostedFile = httpContext.Request.Files[i];
-
-                    // this is an example of how you can extract addional values from the Ajax call
-                    string name = httpContext.Request.Form["user"];
-
-                    if (httpPostedFile != null)
+                    //Loop through uploaded files  
+                    for (int i = 0; i < httpContext.Request.Files.Count; i++)
                     {
-                        // Construct file save path  
-                        //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-                        string fname = UserName + "."+ httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
-                        var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
-                        // Save the uploaded file  
-                        httpPostedFile.SaveAs(fileSavePath);
-                        imageLinks.Add("uploadedFiles/" + fname);
+                        HttpPostedFile httpPostedFile = httpContext.Request.Files[i];
+
+                        // this is an example of how you can extract addional values from the Ajax call
+                        string name = httpContext.Request.Form["user"];
+
+                        if (httpPostedFile != null)
+                        {
+                            // Construct file save path  
+                            //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
+                            string fname = UserName + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
+                            var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
+                            // Save the uploaded file  
+                            httpPostedFile.SaveAs(fileSavePath);
+                            imageLinks.Add("uploadedFiles/" + fname);
+                        }
                     }
                 }
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString()); //Will display localized message
+                ExceptionLogger el = new ExceptionLogger(ex);
+                System.Threading.Thread t = new System.Threading.Thread(el.DoLog);
+                t.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+                t.Start();
+            }
             return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
+
         }
 
 
-            // PUT api/values/5
-            public void Put(int id, [FromBody]string value)
+        // PUT api/values/5
+        public void Put(int id, [FromBody]string value)
         {
         }
 
         // DELETE api/values/5
         public void Delete(int id)
         {
+        }
+
+
+        class ExceptionLogger
+        {
+            Exception _ex;
+
+            public ExceptionLogger(Exception ex)
+            {
+                _ex = ex;
+            }
+
+            public void DoLog()
+            {
+                Console.WriteLine(_ex.ToString()); //Will display en-US message
+            }
         }
     }
 }

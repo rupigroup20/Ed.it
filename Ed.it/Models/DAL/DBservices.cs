@@ -125,8 +125,10 @@ public class DBservices
             //user.Name = dataTable.Rows[0]["Name"].ToString();
             //user.UserName = dataTable.Rows[0]["UserName"].ToString();
             user.Name= dataTable.Rows[0]["Name"].ToString();
+            user.Password = dataTable.Rows[0]["Password"].ToString();
             user.UrlPicture= dataTable.Rows[0]["UrlPicture"].ToString();
             user.SchoolType= dataTable.Rows[0]["SchoolType"].ToString();
+            user.TeacherType = dataTable.Rows[0]["TeacherType"].ToString();
             user.Email = dataTable.Rows[0]["Email"].ToString();
             user.BDate=  dataTable.Rows[0]["Bdate"].ToString();
             user.AboutMe= dataTable.Rows[0]["AboutMe"].ToString();

@@ -56,7 +56,6 @@ namespace Ed.it.Controllers
                     }
                 }
             }
-
             // Return status code  
             return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
             ////העלאת קובץ לשרת
@@ -82,12 +81,7 @@ namespace Ed.it.Controllers
             //{
             //    throw (ex.InnerException);
             //}
-        }
-
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
+        }     
 
         // DELETE api/values/5
         public void Delete(int id)

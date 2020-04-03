@@ -129,6 +129,13 @@ namespace Ed.it.Controllers
 
         }
 
+        [HttpPut]
+        [Route("api/User/UpdateUser")]
+        public int Put([FromBody]User NewUser)
+        {
+           int numEffected = NewUser.UpdateDetails();
+            return numEffected;
+        }
 
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)

@@ -227,4 +227,35 @@ public class DBservices
         }
         return Tags;// מחזיר אובייקט מסוג DBServices
     }
+
+    public int UpdateDetails(User NewUser)
+    {
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query = $@"UPDATE  _User
+                            SET Password='{NewUser.Password}', Name='{NewUser.Name}', TeacherType='{NewUser.TeacherType}', BDate='{NewUser.BDate}', SchoolType='{NewUser.SchoolType}', AboutMe='{NewUser.AboutMe}'
+                            WHERE Email='{NewUser.Email}'";
+            cmd = CreateCommand(query, con);
+            numEffected =cmd.ExecuteNonQuery(); // execute the command
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            return 0;
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+    }
 }

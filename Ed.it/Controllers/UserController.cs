@@ -14,14 +14,19 @@ using System.Data.SqlClient;
 using System.Web.Http.ExceptionHandling;
 using System.Globalization;
 using System.Threading;
-
+using Microsoft.Office.Interop.PowerPoint;
+using System.Drawing;
+using Aspose.Slides;
 
 namespace Ed.it.Controllers
 {
+    //public sealed class Presentation : IPresentation,
+    //IPresentationComponent, IDisposable
+
     public class UserController : ApiController
     {
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
-        string UrlLocal = @"C:\Users\programmer\Ed.it\Ed.it\uploadedFiles\\";//ניתוב מקומי
+        string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
         bool Local = true;//עובדים על השרת או מקומי
         
         
@@ -107,11 +112,32 @@ namespace Ed.it.Controllers
                             // Construct file save path  
                             //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
                             string fname = Email.Split('@').First() + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
-                            var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
+                            var fileSavePath="";
+                            if (Local)
+                            {
+                                fileSavePath = Path.Combine(UrlLocal, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                            }
+                            else
+                            {
+                                fileSavePath= Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                            }
                             // Save the uploaded file  
                             httpPostedFile.SaveAs(fileSavePath);
                             imageLinks.Add("uploadedFiles/" + fname);
 
+                            //פיצול מצגת לתמונות
+                            using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
+                            {
+                                foreach (ISlide sld in pres.Slides)
+                                {
+                                    // Create a full scale image
+                                    Bitmap bmp = sld.GetThumbnail(1f, 1f);
+                                    fileSavePath= Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), string.Format("{0}_{1}.jpg", Email.Split('@').First(), sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                    // Save the image to disk in JPEG format
+                                    bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                }
+                            }
+                    
                         }
                     }
                 }
@@ -129,6 +155,7 @@ namespace Ed.it.Controllers
         }
 
 
+
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)
         {
@@ -138,6 +165,7 @@ namespace Ed.it.Controllers
         public void Delete(int id)
         {
         }
+
 
 
         class ExceptionLogger

@@ -27,6 +27,7 @@ namespace Ed.it.Controllers
     {
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
+        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedFiles\\";
         bool Local = true;//עובדים על השרת או מקומי
         
         
@@ -154,6 +155,13 @@ namespace Ed.it.Controllers
 
         }
 
+        [HttpPut]
+        [Route("api/User/UpdateUser")]
+        public int Put([FromBody]User NewUser)
+        {
+           int numEffected = NewUser.UpdateDetails();
+            return numEffected;
+        }
 
 
         // PUT api/values/5

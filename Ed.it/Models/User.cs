@@ -56,5 +56,11 @@ namespace Ed.it.Models
             return user;        
          
         }
+
+        public int UpdateDetails()
+        {
+           int numEffected = dBservices.UpdateDetails(this);
+            return numEffected;
+        }
     }
 }

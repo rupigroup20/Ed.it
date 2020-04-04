@@ -125,8 +125,10 @@ public class DBservices
             //user.Name = dataTable.Rows[0]["Name"].ToString();
             //user.UserName = dataTable.Rows[0]["UserName"].ToString();
             user.Name= dataTable.Rows[0]["Name"].ToString();
+            user.Password = dataTable.Rows[0]["Password"].ToString();
             user.UrlPicture= dataTable.Rows[0]["UrlPicture"].ToString();
             user.SchoolType= dataTable.Rows[0]["SchoolType"].ToString();
+            user.TeacherType = dataTable.Rows[0]["TeacherType"].ToString();
             user.Email = dataTable.Rows[0]["Email"].ToString();
             user.BDate=  dataTable.Rows[0]["Bdate"].ToString();
             user.AboutMe= dataTable.Rows[0]["AboutMe"].ToString();
@@ -224,5 +226,36 @@ public class DBservices
             }
         }
         return Tags;// מחזיר אובייקט מסוג DBServices
+    }
+
+    public int UpdateDetails(User NewUser)
+    {
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query = $@"UPDATE  _User
+                            SET Password='{NewUser.Password}', Name='{NewUser.Name}', TeacherType='{NewUser.TeacherType}', BDate='{NewUser.BDate}', SchoolType='{NewUser.SchoolType}', AboutMe='{NewUser.AboutMe}'
+                            WHERE Email='{NewUser.Email}'";
+            cmd = CreateCommand(query, con);
+            numEffected =cmd.ExecuteNonQuery(); // execute the command
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            return 0;
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
     }
 }

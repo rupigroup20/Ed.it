@@ -16,6 +16,10 @@ namespace Ed.it.Controllers
 {
     public class ContentController : ApiController
     {
+        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
+        string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
+        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedPictures\\";
+
         // GET api/values
         public IEnumerable<string> Get()
         {
@@ -28,9 +32,22 @@ namespace Ed.it.Controllers
             return "value";
         }
 
+
         [HttpPost]
-        [Route("api/UploadContent/{ContentID}")]
-        public HttpResponseMessage UploadContent(string ContentID)//[FromBody]User NewUser
+        [Route("api/Content/AddContent")]
+        public HttpResponseMessage AddContent(Content content)
+        {
+            content.UploadContent();
+            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.BadRequest, "Error message hadar shame");
+            HttpResponseMessage response2 = Request.CreateResponse(HttpStatusCode.Created);
+
+            return response;
+
+        }
+
+        [HttpPost]
+        [Route("api/Content/UploadContent/{ByUser}/{ContentID}")]
+        public HttpResponseMessage UploadContent(string ByUser,string ContentID)//[FromBody]User NewUser
         {
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;
@@ -75,29 +92,7 @@ namespace Ed.it.Controllers
             }
             // Return status code  
             return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
-            ////העלאת קובץ לשרת
-            //var ctx = HttpContext.Current;
-            //var root = ctx.Server.MapPath("~/App_Data");//להוסיף תיקייה כזאת בהמשך
-            //var provider = new MultipartFormDataStreamProvider(root);
-            //try
-            //{
-            //    await Request.Content.ReadAsMultipartAsync(provider);
-            //    foreach (var file in provider.FileData)
-            //    {
-            //        var name = file.Headers.ContentDisposition.FileName;
-            //        var localFileName = file.LocalFileName;
-            //        var filePath = Path.Combine(root, name);
-            //        File.Move(localFileName, filePath);
-
-            //    }
-            //    //content.UploadContent("");
-            //    return "File Uploaded";
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw (ex.InnerException);
-            //}
+      
         }     
 
         // DELETE api/values/5

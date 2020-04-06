@@ -143,13 +143,13 @@ public class DBservices
     /// <summary>
     /// העלאת תוכן ע"י משתמש
     /// </summary>
-    internal int UploadContent(string userId, Content content)
+    internal int UploadContent(Content content)
     {
         try
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _Teacher values('{content.ContentName}','{content.PathFile}','{content.Description}','{content.UploadedDate}')";
+            string query = $@"INSERT INTO _Content values('{content.ContentName}','{content.PathFile}','{content.ByUser}','{content.Description}','{content.UploadedDate}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
             //שליפת זהות התוכן שהועלה עכשיו
@@ -166,7 +166,7 @@ public class DBservices
                 numEffected += cmd.ExecuteNonQuery();
             }
 
-            return numEffected;
+            return ContentId;
 
            
         }

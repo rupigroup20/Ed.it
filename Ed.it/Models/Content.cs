@@ -7,12 +7,14 @@ namespace Ed.it.Models
 {
     public class Content
     {
+        public int ContentID { get; set; }
         public string ContentName { get; set; }
         public string PathFile { get; set; }
         public string Description { get; set; }
         public List<string> TagsContent { get; set; }//תגים שהתוכן מתויג בו
-        public DateTime UploadedDate { get; set; }
+        public string UploadedDate { get; set; }
         public int Likes { get; set; }
+        public string ByUser { get; set; }
         DBservices dBservices = new DBservices();
 
         public Content()
@@ -23,9 +25,10 @@ namespace Ed.it.Models
         /// <summary>
         /// העלאת תוכן ע"י משתמש
         /// </summary>
-        public void UploadContent(string UserId)
+        public int UploadContent()
         {
-            dBservices.UploadContent(UserId, this);
+            ContentID = dBservices.UploadContent(this);
+            return ContentID;
         }
 
     }

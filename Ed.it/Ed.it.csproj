@@ -263,7 +263,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="uploadedFiles\" />
+    <Folder Include="uploadedContents\" />
+    <Folder Include="uploadedPictures\" />
     <Folder Include="Views\Content\" />
   </ItemGroup>
   <ItemGroup>

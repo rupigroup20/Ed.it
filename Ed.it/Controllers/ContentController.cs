@@ -19,6 +19,7 @@ namespace Ed.it.Controllers
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedPictures\\";
+        bool Local = true;//עובדים על השרת או מקומי
 
         // GET api/values
         public IEnumerable<string> Get()
@@ -37,17 +38,23 @@ namespace Ed.it.Controllers
         [Route("api/Content/AddContent")]
         public HttpResponseMessage AddContent(Content content)
         {
-            content.UploadContent();
-            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.BadRequest, "Error message hadar shame");
-            HttpResponseMessage response2 = Request.CreateResponse(HttpStatusCode.Created);
-
-            return response;
-
+            HttpResponseMessage response;
+            try
+            {
+                content.UploadContent();
+                response = Request.CreateResponse(HttpStatusCode.Created);
+                return response;
+            }
+            catch(Exception ex)
+            {
+                response = Request.CreateResponse(HttpStatusCode.BadRequest, "Error-"+ex.Message);
+                return response;
+            }
         }
 
         [HttpPost]
-        [Route("api/Content/UploadContent/{ByUser}/{ContentID}")]
-        public HttpResponseMessage UploadContent(string ByUser,string ContentID)//[FromBody]User NewUser
+        [Route("api/Content/UploadContent/{ByUser}/{ContentName}")]    ///
+        public HttpResponseMessage UploadContent(string ByUser, string ContentName)
         {
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;
@@ -66,12 +73,18 @@ namespace Ed.it.Controllers
                     if (httpPostedFile != null)
                     {
                         // Construct file save path  
-                        //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-                        string fname = httpPostedFile.FileName.Split('\\').Last();
-                        var fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), fname);
+                        string fname = $@"{ContentName}-{ByUser}.{httpPostedFile.FileName.Split('\\').Last().Split('.').Last()}";//holocaust-shiftan92.pptx
+                        var fileSavePath = "";
+                        if (Local)
+                        {
+                            fileSavePath = Path.Combine(UrlLocal, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                        }
+                        else
+                        {
+                            fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedContents"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                        }
                         // Save the uploaded file  
                         httpPostedFile.SaveAs(fileSavePath);
-                        imageLinks.Add("uploadedFiles/" + fname);
 
                         //פיצול מצגת לתמונות
                         using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
@@ -80,20 +93,21 @@ namespace Ed.it.Controllers
                             {
                                 // Create a full scale image
                                 Bitmap bmp = sld.GetThumbnail(1f, 1f);
-                                fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedFiles"), string.Format("{0}_{1}.jpg", ContentID, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
-                                                                                                                                                                                    // Save the image to disk in JPEG format
+                                fileSavePath = Path.Combine(UrlLocal, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                // Save the image to disk in JPEG format
                                 bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
                             }
                         }
-                    }
 
-              
+
+                    }
                 }
+                // Return status code  
+                return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
+
             }
-            // Return status code  
-            return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
-      
-        }     
+                return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
+        }
 
         // DELETE api/values/5
         public void Delete(int id)

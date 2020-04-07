@@ -69,7 +69,7 @@ public class DBservices
     internal int CreateUser(User user)
     {
         try
-        {
+        {           
             con = Connect("DBConnectionString");
             int numEffected = 0;
             string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
@@ -155,6 +155,7 @@ public class DBservices
             //שליפת זהות התוכן שהועלה עכשיו
             query = $@"SELECT max(ContentID) FROM _Content";
             dt = new DataTable();
+            da = new SqlDataAdapter(query, con);
             DataSet ds = new DataSet();
             da.Fill(ds);
             dt = ds.Tables[0];
@@ -163,6 +164,7 @@ public class DBservices
             for (int i = 0; i < content.TagsContent.Count; i++)
             {
                 query = $@"INSERT INTO _RelatedTo values('{content.TagsContent[i]}',{ContentId})";
+                cmd = CreateCommand(query, con);
                 numEffected += cmd.ExecuteNonQuery();
             }
 
@@ -172,7 +174,6 @@ public class DBservices
         }
         catch (Exception ex)
         {
-            return 0;
             // write to log
             throw (ex);
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
 
@@ -29,6 +30,12 @@ namespace Ed.it.Models
         {
             ContentID = dBservices.UploadContent(this);
             return ContentID;
+        }
+
+        public DataTable GetSuggestionsOfContents(string UserName)
+        {
+
+            return null;
         }
 
     }

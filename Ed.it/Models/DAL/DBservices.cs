@@ -164,7 +164,7 @@ public class DBservices
             //הכנסת תגים עבור התוכן
             for (int i = 0; i < content.TagsContent.Count; i++)
             {
-                query = $@"INSERT INTO _RelatedTo values('{content.TagsContent[i]}',{ContentId})";
+                query = $@"INSERT INTO _ContentRelatedTo values('{content.TagsContent[i]}',{ContentId})";
                 cmd = CreateCommand(query, con);
                 numEffected += cmd.ExecuteNonQuery();
             }
@@ -260,4 +260,77 @@ public class DBservices
             }
         }
     }
+
+    /// <summary>
+    /// אלגוריתם חכם-הצעת תכנים למשתמש
+    /// </summary>
+    internal List<Content> GetSuggestionsOfContents(string userName)
+    {
+        List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        DataTable ScoreTable = new DataTable();//טבלת עם התגים של היוזר לפי ניקוד
+        DataTable ContentTagTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
+        try
+        {
+            //שלב 1- שליפת רשימת התגים שאוהב היוזר לפי ניקוד בסדר יורד
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT *
+                              FROM _TagsUsedOn
+                              WHERE UserName='{userName}'
+                              ORDER BY Score desc";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            ScoreTable = ds.Tables[0];
+
+            //שלושה מחזורים באלגוריתם חכם
+            string TagToSearch;
+            for (int i = 0; i < 3; i++)
+            {
+                TagToSearch = ScoreTable.Rows[i]["UserName"].ToString();
+                //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
+                query = $@" SELECT *
+                            FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
+                            inner join( select count(*) as Likes,ContentID
+			                            from _Liked
+			                            group by ContentID) as L on C.ContentID=L.ContentID
+                            WHERE TagName='{TagToSearch}' 
+                            ORDER BY Likes desc";
+                da = new SqlDataAdapter(query, con);
+                ds = new DataSet();
+                da.Fill(ds);
+                ContentTagTable = ds.Tables[0];
+
+                int HowManyContentsToAdd=3;//רק 50 אחוז מהמצגות האטרקטיביות ביותר 3 במינימום אם אין יותר
+                if (ContentTagTable.Rows.Count >= 3)
+                    HowManyContentsToAdd = (ContentTagTable.Rows.Count) / 2;//50%
+
+                //הוספת התכנים לטבלת התכנים
+                for (int j = 0; j < HowManyContentsToAdd; j++)
+                {
+                    foreach (DataRow row in ContentTagTable.Rows)
+                    {
+
+                    }
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return SuggestionList;
+    }
+
 }

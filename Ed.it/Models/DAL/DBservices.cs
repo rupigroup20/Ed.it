@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Configuration;
+using System.Linq;
 
 /// <summary>
 /// DBServices is a class created by me to provides some DataBase Services
@@ -73,13 +74,13 @@ public class DBservices
         {           
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}')";
+            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}','{user.Email.Split('@').First()}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
 
             for (int i = 0; i < user.TagsUser.Count; i++)
             {
-                string query2 = $@"INSERT INTO _TagsUseOn values({1},'{user.Email}', '{user.TagsUser[i]}')";
+                string query2 = $@"INSERT INTO _TagsUsedOn values({1},'{user.Email.Split('@').First()}', '{user.TagsUser[i]}')";
                 cmd= CreateCommand(query2, con);
                 numEffected += cmd.ExecuteNonQuery();
             }

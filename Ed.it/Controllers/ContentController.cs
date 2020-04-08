@@ -27,10 +27,21 @@ namespace Ed.it.Controllers
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/values/5
-        public string Get(int id)
+
+        [HttpGet]
+        [Route("api/Content/SuggestContent/{UserName}")]
+        public List<Content> Get(string UserName)
         {
-            return "value";
+            try
+            {
+                Content content = new Content();
+                return content.GetSuggestionsOfContents(UserName);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
         }
 
 
@@ -41,6 +52,7 @@ namespace Ed.it.Controllers
             HttpResponseMessage response;
             try
             {
+                content.PathFile = $@"{content.ContentName}-{content.ByUser}.{content.PathFile.Split('\\').Last().Split('.').Last()}";//מחליף את שם הקובץ ל //holocaust-shiftan92.pptx
                 content.UploadContent();
                 response = Request.CreateResponse(HttpStatusCode.Created);
                 return response;
@@ -108,6 +120,8 @@ namespace Ed.it.Controllers
             }
                 return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
         }
+
+
 
         // DELETE api/values/5
         public void Delete(int id)

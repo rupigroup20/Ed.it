@@ -32,10 +32,14 @@ namespace Ed.it.Models
             return ContentID;
         }
 
-        public DataTable GetSuggestionsOfContents(string UserName)
+        /// <summary>
+        /// אלגוריתם חכם-הצעת תכנים למשתמש
+        /// </summary>
+        public List<Content> GetSuggestionsOfContents(string UserName)
         {
-
-            return null;
+            List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+            SuggestionList = dBservices.GetSuggestionsOfContents(UserName);
+            return SuggestionList;
         }
 
     }

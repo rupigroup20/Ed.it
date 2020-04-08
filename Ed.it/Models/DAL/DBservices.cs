@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.Configuration;
 
 /// <summary>
@@ -78,7 +79,7 @@ public class DBservices
 
             for (int i = 0; i < user.TagsUser.Count; i++)
             {
-                string query2 = $@"INSERT INTO _UseOn values({1},'{user.Email}', '{user.TagsUser[i]}')";
+                string query2 = $@"INSERT INTO _TagsUseOn values({1},'{user.Email}', '{user.TagsUser[i]}')";
                 cmd= CreateCommand(query2, con);
                 numEffected += cmd.ExecuteNonQuery();
             }
@@ -265,6 +266,7 @@ public class DBservices
     /// </summary>
     internal List<Content> GetSuggestionsOfContents(string userName)
     {
+        Content content = new Content();
         List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
         DataTable ScoreTable = new DataTable();//טבלת עם התגים של היוזר לפי ניקוד
         DataTable ContentTagTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
@@ -282,34 +284,49 @@ public class DBservices
             ScoreTable = ds.Tables[0];
 
             //שלושה מחזורים באלגוריתם חכם
-            string TagToSearch;
+            string TagToSearch="";
             for (int i = 0; i < 3; i++)
             {
-                TagToSearch = ScoreTable.Rows[i]["UserName"].ToString();
+                if (!string.IsNullOrEmpty(ScoreTable.Rows[i]["TagName"].ToString()))
+                    TagToSearch = ScoreTable.Rows[i]["TagName"].ToString();
+                else
+                    continue;
+
                 //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
+                //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
                 query = $@" SELECT *
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
 			                            from _Liked
 			                            group by ContentID) as L on C.ContentID=L.ContentID
-                            WHERE TagName='{TagToSearch}' 
+                            WHERE TagName='{TagToSearch}' and C.ByUser<>'{userName}'
                             ORDER BY Likes desc";
                 da = new SqlDataAdapter(query, con);
                 ds = new DataSet();
                 da.Fill(ds);
                 ContentTagTable = ds.Tables[0];
 
-                int HowManyContentsToAdd=3;//רק 50 אחוז מהמצגות האטרקטיביות ביותר 3 במינימום אם אין יותר
-                if (ContentTagTable.Rows.Count >= 3)
+                int HowManyContentsToAdd= ContentTagTable.Rows.Count;
+                if (ContentTagTable.Rows.Count >= 3)//אם יותר משלוש יקח חמישים אחוז
                     HowManyContentsToAdd = (ContentTagTable.Rows.Count) / 2;//50%
 
                 //הוספת התכנים לטבלת התכנים
                 for (int j = 0; j < HowManyContentsToAdd; j++)
                 {
-                    foreach (DataRow row in ContentTagTable.Rows)
+                    //שליפת פרטים כללים על המצגת-רק להצגה 
+                    if (!string.IsNullOrEmpty(ContentTagTable.Rows[j]["ContentID"].ToString()))
                     {
-
-                    }
+                        content.ContentID = Convert.ToInt32(ContentTagTable.Rows[j]["ContentID"]);
+                        if (!SuggestionList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                        {
+                            content.ContentName = ContentTagTable.Rows[j]["ContentName"].ToString();
+                            content.Description = ContentTagTable.Rows[j]["Description"].ToString();
+                            content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
+                            content.PathFile = content.PathFile.Split('.').First()+"_1.jpg";//מציגים את התמונה הראשונה
+                            SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
+                            content = new Content();
+                        }
+                    }                                                                
                 }
             }
 

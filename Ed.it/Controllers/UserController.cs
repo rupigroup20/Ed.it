@@ -29,7 +29,7 @@ namespace Ed.it.Controllers
 
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי
-        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedPictures\\";
+        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedPicturesPub\\";
         
         
         // GET api/values

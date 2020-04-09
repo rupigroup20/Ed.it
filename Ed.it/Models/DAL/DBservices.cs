@@ -65,6 +65,7 @@ public class DBservices
         return cmd;
     }
 
+
     /// <summary>
     /// יצירת משתמש חדש במערכת
     /// </summary>
@@ -286,6 +287,8 @@ public class DBservices
 
             //שלושה מחזורים באלגוריתם חכם
             string TagToSearch="";
+            if (ScoreTable.Rows.Count == 0)
+                return SuggestionList;
             for (int i = 0; i < 3; i++)
             {
                 if (!string.IsNullOrEmpty(ScoreTable.Rows[i]["TagName"].ToString()))
@@ -348,5 +351,150 @@ public class DBservices
 
         return SuggestionList;
     }
+
+    /// <summary>
+    /// הצעת תכנים לאורח-התכנים עם הכי הרבה לייקים ללא קשר לתגיות
+    /// </summary>
+    internal List<Content> GetSuggestionsOfContentsForGuest()
+    {
+        Content content = new Content();
+        List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        DataTable ContentTagTable = new DataTable();
+        try
+        {
+            con = Connect("DBConnectionString");
+            //מביא את 10 התכנים עם הכי הרבה לייקים
+            string query = $@"SELECT Top 10 C.ContentID,C.ContentName,C.PathFile,CAST(Description AS NVARCHAR(200)) as Description,L.Likes
+                            FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
+                            inner join( select count(*) as Likes,ContentID
+			                            from _Liked
+			                            group by ContentID) as L on C.ContentID=L.ContentID
+                            Group by C.ContentID,C.ContentName,C.PathFile,L.Likes,CAST(Description AS NVARCHAR(200))
+                            ORDER BY Likes desc";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            ContentTagTable = ds.Tables[0];
+           
+            //הוספת התכנים לרשימה
+            for (int j = 0; j < ContentTagTable.Rows.Count; j++)
+            {
+                //שליפת פרטים כללים על המצגת-רק להצגה 
+                if (!string.IsNullOrEmpty(ContentTagTable.Rows[j]["ContentID"].ToString()))
+                {
+                    content.ContentID = Convert.ToInt32(ContentTagTable.Rows[j]["ContentID"]);
+                    if (!SuggestionList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                    {
+                        content.ContentName = ContentTagTable.Rows[j]["ContentName"].ToString();
+                        content.Description = ContentTagTable.Rows[j]["Description"].ToString();
+                        content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
+                        content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                        SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
+                        content = new Content();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return SuggestionList;
+    }
+
+    /// <summary>
+    /// חיפוש תכנים לפי תגית
+    /// </summary>
+    internal List<Content> Search(string TagToSearch)
+    {
+        Content content = new Content();
+        List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        DataTable TagsRealetedTable = new DataTable();//טבלה עבור התגיות שמשתייכות לתגית המבוקשת
+        DataTable ContentTagTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
+
+        try
+        {
+            //מציאת תגיות שהכי קשורות לתגית שרשמנו במנוע חיפוש
+            //סופר מי 2 התווית שמתלווה הכי הרבה פעמים בתכנים בהם מופיעה גם התגית שאנחנו מחפשים
+            //הראשונה כמובן תהיה התגית שאנחנו מחפשים
+            string query = $@"SELECT top 3 COUNT(TagName) as TagsCount,TagName
+                        FROM _ContentRelatedTo
+                        WHERE ContentID in(
+					                        select ContentID
+					                        from _ContentRelatedTo
+					                        where TagName='{TagToSearch}') 
+                        GROUP by TagName
+                        ORDER by TagsCount desc";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            TagsRealetedTable = ds.Tables[0];
+
+            for (int i = 0; i < TagsRealetedTable.Rows.Count; i++)
+            {
+                //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
+                //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
+                query = $@" SELECT *
+                            FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
+                            inner join( select count(*) as Likes,ContentID
+			                            from _Liked
+			                            group by ContentID) as L on C.ContentID=L.ContentID
+                            WHERE TagName='{TagsRealetedTable.Rows[i]["TagName"].ToString()}' 
+                            ORDER BY Likes desc";
+                da = new SqlDataAdapter(query, con);
+                ds = new DataSet();
+                da.Fill(ds);
+                ContentTagTable = ds.Tables[0];
+
+                //הוספת התכנים לטבלת התכנים
+                for (int j = 0; j < ContentTagTable.Rows.Count; j++)
+                {
+                    //שליפת פרטים כללים על המצגת-רק להצגה 
+                    if (!string.IsNullOrEmpty(ContentTagTable.Rows[j]["ContentID"].ToString()))
+                    {
+                        content.ContentID = Convert.ToInt32(ContentTagTable.Rows[j]["ContentID"]);
+                        if (!SuggestionList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                        {
+                            content.ContentName = ContentTagTable.Rows[j]["ContentName"].ToString();
+                            content.Description = ContentTagTable.Rows[j]["Description"].ToString();
+                            content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
+                            content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                            SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
+                            content = new Content();
+                        }
+                    }
+                }
+       
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return SuggestionList;
+    }
+
 
 }

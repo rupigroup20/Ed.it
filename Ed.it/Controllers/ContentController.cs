@@ -21,16 +21,12 @@ namespace Ed.it.Controllers
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedPictures\\";
         bool Local = true;//עובדים על השרת או מקומי
 
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-
+        /// <summary>
+        /// הצעת תכנים עבור משתמש רשום
+        /// </summary>
         [HttpGet]
         [Route("api/Content/SuggestContent/{UserName}")]
-        public List<Content> Get(string UserName)
+        public List<Content> GetSuggestContentForUser(string UserName)
         {
             try
             {
@@ -38,6 +34,24 @@ namespace Ed.it.Controllers
                 return content.GetSuggestionsOfContents(UserName);
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// הצעת תכנים עבור אורח-דף בית עבור משתמש שלא התחבר
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/SuggestContentForGuest")]
+        public List<Content> GetSuggestContentForGuest()
+        {
+            try
+            {
+                Content content = new Content();
+                return content.GetSuggestionsOfContentsForGuest();
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }

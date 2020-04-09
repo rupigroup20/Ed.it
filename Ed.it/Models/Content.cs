@@ -42,5 +42,25 @@ namespace Ed.it.Models
             return SuggestionList;
         }
 
+        /// <summary>
+        /// הצעת תכנים לאורח-התכנים עם הכי הרבה לייקים ללא קשר לתגיות
+        /// </summary>
+        public List<Content> GetSuggestionsOfContentsForGuest()
+        {
+            List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+            SuggestionList = dBservices.GetSuggestionsOfContentsForGuest();
+            return SuggestionList;
+        }
+
+
+        /// <summary>
+        /// חיפוש תכנים
+        /// </summary>
+        internal List<Content> Search(string tagName)
+        {
+            List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+            ResultList = dBservices.GetSuggestionsOfContentsForGuest();
+            return ResultList;
+        }
     }
 }

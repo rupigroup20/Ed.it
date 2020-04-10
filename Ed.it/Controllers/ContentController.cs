@@ -135,7 +135,13 @@ namespace Ed.it.Controllers
                 return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
         }
 
-
+        [HttpGet]
+        [Route("api/Content/GetContent/{ContentID}")]
+        public Content GetContent(string ContentID)
+        {
+            Content content = new Content();
+            return content.GetContent(ContentID);
+        }
 
         // DELETE api/values/5
         public void Delete(int id)

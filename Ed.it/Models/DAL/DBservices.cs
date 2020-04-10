@@ -428,6 +428,7 @@ public class DBservices
             //מציאת תגיות שהכי קשורות לתגית שרשמנו במנוע חיפוש
             //סופר מי 2 התווית שמתלווה הכי הרבה פעמים בתכנים בהם מופיעה גם התגית שאנחנו מחפשים
             //הראשונה כמובן תהיה התגית שאנחנו מחפשים
+            con = Connect("DBConnectionString");
             string query = $@"SELECT top 3 COUNT(TagName) as TagsCount,TagName
                         FROM _ContentRelatedTo
                         WHERE ContentID in(
@@ -497,4 +498,50 @@ public class DBservices
     }
 
 
+    internal Content GetContent(string ContentID)
+    {
+        Content content = new Content();
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic
+                              from _Content C inner join (select count( ContentID) as Likes, ContentID
+                                                          from _Liked
+                                                          group by ContentID) as L on C.ContentID=L.ContentID 
+                              inner join _User U on C.ByUser=U.UserNameByEmail
+                              where C.ContentID='{ContentID}'";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+
+            if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+            {
+                content.ContentID = Convert.ToInt32(dt.Rows[0]["ContentID"]);
+                content.ContentName = dt.Rows[0]["ContentName"].ToString();
+                content.PathFile = dt.Rows[0]["PathFile"].ToString();
+                content.ByUser = dt.Rows[0]["ByUser"].ToString();
+                content.Description = dt.Rows[0]["Description"].ToString();
+                content.UploadedDate = dt.Rows[0]["UploadDate"].ToString();
+                content.Likes = Convert.ToInt32(dt.Rows[0]["Likes"]);
+                content.UserPic= dt.Rows[0]["UserPic"].ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return content;
+    }
 }

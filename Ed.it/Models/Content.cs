@@ -16,6 +16,7 @@ namespace Ed.it.Models
         public string UploadedDate { get; set; }
         public int Likes { get; set; }
         public string ByUser { get; set; }
+        public string UserPic { get; set; }
         DBservices dBservices = new DBservices();
 
         public Content()
@@ -61,6 +62,13 @@ namespace Ed.it.Models
             List<Content> ResultList = new List<Content>();
             ResultList = dBservices.Search(tagName);
             return ResultList;
+        }
+
+        public Content GetContent(string ContentID)
+        {
+            Content content = new Content();
+            content= dBservices.GetContent(ContentID);
+            return content;
         }
     }
 }

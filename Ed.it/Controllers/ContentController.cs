@@ -18,7 +18,7 @@ namespace Ed.it.Controllers
     {
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
-        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\server\Ed.it\Ed.it\uploadedPictures\\";
+        string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedFilesPub\\";
         bool Local = true;//עובדים על השרת או מקומי
 
         /// <summary>
@@ -160,7 +160,13 @@ namespace Ed.it.Controllers
                 return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
         }
 
-
+        [HttpGet]
+        [Route("api/Content/GetContent/{ContentID}")]
+        public Content GetContent(string ContentID)
+        {
+            Content content = new Content();
+            return content.GetContent(ContentID);
+        }
 
         // DELETE api/values/5
         public void Delete(int id)

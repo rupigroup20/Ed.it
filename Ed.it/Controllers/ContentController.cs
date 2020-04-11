@@ -59,6 +59,28 @@ namespace Ed.it.Controllers
         }
 
 
+        /// <summary>
+        /// חיפוש תכנים לפי תגית
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/Search/{Tag}")]
+        public List<Content> Search(string TagName)
+        {
+            try
+            {
+                Content content = new Content();
+                return content.Search(TagName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        /// <summary>
+        /// שמירת תוכן בעת העלאה
+        /// </summary>
         [HttpPost]
         [Route("api/Content/AddContent")]
         public HttpResponseMessage AddContent(Content content)
@@ -78,6 +100,9 @@ namespace Ed.it.Controllers
             }
         }
 
+        /// <summary>
+        /// שמירת קובץ התוכן פלוס תמונות של המצגת
+        /// </summary>
         [HttpPost]
         [Route("api/Content/UploadContent/{ByUser}/{ContentName}")]    ///
         public HttpResponseMessage UploadContent(string ByUser, string ContentName)

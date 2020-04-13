@@ -103,7 +103,7 @@ namespace Ed.it.Controllers
                         var fileSavePath = "";
                         if (Local)
                         {
-                            fileSavePath = Path.Combine(UrlLocal, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                            fileSavePath = Path.Combine(UrlLocalAlmog, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
                         }
                         else
                         {
@@ -119,7 +119,7 @@ namespace Ed.it.Controllers
                             {
                                 // Create a full scale image
                                 Bitmap bmp = sld.GetThumbnail(1f, 1f);
-                                fileSavePath = Path.Combine(UrlLocal, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                fileSavePath = Path.Combine(UrlLocalAlmog, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
                                 // Save the image to disk in JPEG format
                                 bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
                             }

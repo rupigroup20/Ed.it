@@ -17,6 +17,7 @@ namespace Ed.it.Models
         public int Likes { get; set; }
         public string ByUser { get; set; }
         public string UserPic { get; set; }
+        public int PagesNumber { get; set; }
         DBservices dBservices = new DBservices();
 
         public Content()
@@ -63,12 +64,22 @@ namespace Ed.it.Models
             ResultList = dBservices.Search(tagName);
             return ResultList;
         }
-
+        /// <summary>
+        /// מקבל פרטי מצגת 
+        /// </summary>
         public Content GetContent(string ContentID)
         {
             Content content = new Content();
             content= dBservices.GetContent(ContentID);
             return content;
+        }
+
+        /// <summary>
+        /// עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
+        /// </summary>
+        internal void UpdatePages(int countPages)
+        {
+            dBservices.UpdatePages(countPages);
         }
     }
 }

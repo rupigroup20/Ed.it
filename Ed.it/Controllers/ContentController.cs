@@ -140,14 +140,19 @@ namespace Ed.it.Controllers
                         //פיצול מצגת לתמונות
                         using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
                         {
+                            int countPages = 0;
                             foreach (ISlide sld in pres.Slides)
                             {
+                                countPages++;
                                 // Create a full scale image
                                 Bitmap bmp = sld.GetThumbnail(1f, 1f);
                                 fileSavePath = Path.Combine(UrlLocal, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
                                 // Save the image to disk in JPEG format
                                 bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
                             }
+                            //עדכון מספר עמודים של התוכן בדטה בייס
+                            Content content = new Content();
+                            content.UpdatePages(countPages);
                         }
 
 

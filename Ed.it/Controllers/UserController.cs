@@ -148,6 +148,85 @@ namespace Ed.it.Controllers
 
         }
 
+        [HttpPost]
+        [Route("api/User/update/{UrlPicture}/{Email}/1")]
+        public HttpResponseMessage UpdatePic(string UrlPicture, string Email)
+        {
+            CultureInfo ci = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
+            List<string> imageLinks = new List<string>();
+
+            
+
+            try
+            {
+                var httpContext = HttpContext.Current;
+
+                // Check for any uploaded file  
+                if (httpContext.Request.Files.Count > 0)
+                {
+                    //Loop through uploaded files  
+                    for (int i = 0; i < httpContext.Request.Files.Count; i++)
+                    {
+                        HttpPostedFile httpPostedFile = httpContext.Request.Files[i];
+
+                        // this is an example of how you can extract addional values from the Ajax call
+                        string name = httpContext.Request.Form["user"];
+
+
+                        if (httpPostedFile != null)
+                        {
+                            // Construct file save path  
+                            //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
+
+                            try
+                            {
+                                // Check if file exists with its full path    
+                                if (File.Exists(Path.Combine(UrlLocalAlmog, UrlPicture)))
+                                {
+                                    // If file found, delete it    
+                                    File.Delete(Path.Combine(UrlLocalAlmog, UrlPicture));
+                                    Console.WriteLine("File deleted.");
+                                }
+                                else Console.WriteLine("File not found");
+                            }
+                            catch (IOException ioExp)
+                            {
+                                Console.WriteLine(ioExp.Message);
+                            }
+
+                            string fname = Email.Split('@').First() + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
+                            var fileSavePath = "";
+                            if (Local)
+                            {
+                                fileSavePath = Path.Combine(UrlLocalAlmog, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                            }
+                            else
+                            {
+                                fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                            }
+                            // Save the uploaded file  
+                            httpPostedFile.SaveAs(fileSavePath);
+                            imageLinks.Add("uploadedPicture/" + fname);
+                            User u = new User();
+                            u.UpdatePic(Email, fname);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString()); //Will display localized message
+                ExceptionLogger el = new ExceptionLogger(ex);
+                System.Threading.Thread t = new System.Threading.Thread(el.DoLog);
+                t.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+                t.Start();
+            }
+            return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
+
+        }
+
         [HttpPut]
         [Route("api/User/UpdateUser")]
         public int Put([FromBody]User NewUser)

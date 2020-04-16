@@ -308,6 +308,37 @@ public class DBservices
         }
     }
 
+    public void UpdatePic(string Email, string Urlpic)
+    {
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query = $@"UPDATE  _User
+                            SET UrlPicture='{Urlpic}'
+                            WHERE Email='{Email}'";
+            cmd = CreateCommand(query, con);
+            numEffected = cmd.ExecuteNonQuery(); // execute the command
+            
+        }
+        catch (Exception ex)
+        {
+           
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+    }
+
     /// <summary>
     /// אלגוריתם חכם-הצעת תכנים למשתמש
     /// </summary>

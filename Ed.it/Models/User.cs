@@ -62,5 +62,10 @@ namespace Ed.it.Models
            int numEffected = dBservices.UpdateDetails(this);
             return numEffected;
         }
+
+        public void UpdatePic(string Email, string Urlpic)
+        {
+            dBservices.UpdatePic(Email, Urlpic);
+        }
     }
 }

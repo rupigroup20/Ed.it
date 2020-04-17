@@ -81,25 +81,6 @@ namespace Ed.it.Controllers
 
 
         /// <summary>
-        /// חיפוש תכנים לפי תגית
-        /// </summary>
-        [HttpGet]
-        [Route("api/Content/Search/{Tag}")]
-        public List<Content> Search(string TagName)
-        {
-            try
-            {
-                Content content = new Content();
-                return content.Search(TagName);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-        }
-
-        /// <summary>
         /// שמירת תוכן בעת העלאה
         /// </summary>
         [HttpPost]

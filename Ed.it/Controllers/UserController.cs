@@ -199,10 +199,11 @@ namespace Ed.it.Controllers
                                 // Check if file exists with its full path    
                                else
                                 {
-                                    if (File.Exists(Path.Combine(UrlServer, UrlPicture)))
+                                    if (File.Exists(Path.Combine(HostingEnvironment.MapPath("~/uploadedPictures"), UrlPicture)))
                                     {
+                                        
                                         // If file found, delete it    
-                                        File.Delete(Path.Combine(UrlServer, UrlPicture));
+                                        File.Delete(Path.Combine(HostingEnvironment.MapPath("~/uploadedPictures"), UrlPicture));
                                         Console.WriteLine("File deleted.");
                                     }
                                     else Console.WriteLine("File not found");

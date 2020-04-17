@@ -614,6 +614,7 @@ public class DBservices
             dt = ds.Tables[0];
             if (dt.Rows.Count != 0)
             {
+                content.TagsContent = new List<string>();
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());

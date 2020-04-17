@@ -60,8 +60,8 @@ namespace Ed.it.Models
         /// </summary>
         internal List<Content> Search(string tagName)
         {
-            List<Content> ResultList = new List<Content>();
-            ResultList = dBservices.Search(tagName);
+            List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+            ResultList = dBservices.GetSuggestionsOfContentsForGuest();
             return ResultList;
         }
         /// <summary>

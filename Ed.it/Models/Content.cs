@@ -17,6 +17,7 @@ namespace Ed.it.Models
         public int Likes { get; set; }
         public string ByUser { get; set; }
         public string UserPic { get; set; }
+        public int PagesNumber { get; set; }
         DBservices dBservices = new DBservices();
 
         public Content()
@@ -59,8 +60,8 @@ namespace Ed.it.Models
         /// </summary>
         internal List<Content> Search(string tagName)
         {
-            List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
-            ResultList = dBservices.GetSuggestionsOfContentsForGuest();
+            List<Content> ResultList = new List<Content>();
+            ResultList = dBservices.Search(tagName);
             return ResultList;
         }
         /// <summary>

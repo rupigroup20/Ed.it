@@ -581,7 +581,7 @@ public class DBservices
         try
         {
             con = Connect("DBConnectionString");
-            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic
+            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
                               from _Content C inner join (select count( ContentID) as Likes, ContentID
                                                           from _Liked
                                                           group by ContentID) as L on C.ContentID=L.ContentID 
@@ -602,7 +602,24 @@ public class DBservices
                 content.UploadedDate = dt.Rows[0]["UploadDate"].ToString();
                 content.Likes = Convert.ToInt32(dt.Rows[0]["Likes"]);
                 content.UserPic= dt.Rows[0]["UserPic"].ToString();
+                content.PagesNumber= Convert.ToInt32(dt.Rows[0]["PagesNumber"]);
             }
+            //קבלת התגיות המשתייכות לתוכן
+            query = $@"SELECT TagName
+                    FROM _ContentRelatedTo
+                    WHERE ContentID={ContentID}";
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());
+                }
+            }
+
         }
         catch (Exception ex)
         {

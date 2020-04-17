@@ -17,6 +17,7 @@ using System.Threading;
 using Microsoft.Office.Interop.PowerPoint;
 using System.Drawing;
 using Aspose.Slides;
+using System.Configuration;
 
 namespace Ed.it.Controllers
 {
@@ -27,7 +28,7 @@ namespace Ed.it.Controllers
     {
         bool Local = true;//עובדים על השרת או מקומי
 
-        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
+        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedPictures";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedPicturesPub\\";
         
@@ -109,16 +110,19 @@ namespace Ed.it.Controllers
                             var fileSavePath="";
                             if (Local)
                             {
-                                fileSavePath = Path.Combine(UrlLocal, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                                fileSavePath = Path.Combine(UrlLocalAlmog, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
                             }
                             else
                             {
-                                fileSavePath= Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                                //fileSavePath= Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+
+                                fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedPictures"), fname);
+                                
                             }
                             // Save the uploaded file  
                             httpPostedFile.SaveAs(fileSavePath);
-                            imageLinks.Add("uploadedPicture/" + fname);
-
+                            //imageLinks.Add("uploadedPicture/" + fname);
+                            imageLinks.Add("uploadedPictures/" + fname);
                             ////פיצול מצגת לתמונות
                             //using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
                             //{
@@ -131,7 +135,7 @@ namespace Ed.it.Controllers
                             //        bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
                             //    }
                             //}
-                    
+
                         }
                     }
                 }
@@ -179,36 +183,53 @@ namespace Ed.it.Controllers
                         {
                             // Construct file save path  
                             //var fileSavePath = Path.Combine(HostingEnvironment.MapPath(ConfigurationManager.AppSettings["fileUploadFolder"]), httpPostedFile.FileName);
-
+               
                             try
                             {
-                                // Check if file exists with its full path    
-                                if (File.Exists(Path.Combine(UrlLocalAlmog, UrlPicture)))
+                                if (Local)
                                 {
-                                    // If file found, delete it    
-                                    File.Delete(Path.Combine(UrlLocalAlmog, UrlPicture));
-                                    Console.WriteLine("File deleted.");
+                                    if (File.Exists(Path.Combine(UrlLocalAlmog, UrlPicture)))
+                                    {
+                                        // If file found, delete it    
+                                        File.Delete(Path.Combine(UrlLocalAlmog, UrlPicture));
+                                        Console.WriteLine("File deleted.");
+                                    }
+                                    else Console.WriteLine("File not found");
                                 }
-                                else Console.WriteLine("File not found");
+                                // Check if file exists with its full path    
+                               else
+                                {
+                                    if (File.Exists(Path.Combine(UrlServer, UrlPicture)))
+                                    {
+                                        // If file found, delete it    
+                                        File.Delete(Path.Combine(UrlServer, UrlPicture));
+                                        Console.WriteLine("File deleted.");
+                                    }
+                                    else Console.WriteLine("File not found");
+                                }
                             }
+                            
                             catch (IOException ioExp)
                             {
                                 Console.WriteLine(ioExp.Message);
                             }
 
                             string fname = Email.Split('@').First() + "." + httpPostedFile.FileName.Split('\\').Last().Split('.').Last();//שם הקובץ יהיה שם משתמש
-                            var fileSavePath = "";
+                             var fileSavePath = "";
                             if (Local)
                             {
                                 fileSavePath = Path.Combine(UrlLocalAlmog, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
                             }
                             else
                             {
-                                fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                                //fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), fname);//אם עובדים על השרת שומרים תמונות בתיקייה של השרת
+                                fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedPictures"), fname);
+                                //fileSavePath = Path.Combine(UrlServer, fname);
                             }
                             // Save the uploaded file  
                             httpPostedFile.SaveAs(fileSavePath);
-                            imageLinks.Add("uploadedPicture/" + fname);
+                            //imageLinks.Add("uploadedPicture/" + fname);
+
                             User u = new User();
                             u.UpdatePic(Email, fname);
                         }

@@ -107,6 +107,52 @@ public class DBservices
 
 
     /// <summary>
+    ///  עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
+    /// </summary>
+    internal int UpdatePages(int countPages)
+    {
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT max(ContentID) FROM _Content";
+            dt = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            int contentID=0;
+            if (dt.Rows.Count != 0)
+            {
+                contentID = Convert.ToInt16(dt.Rows[0][0]);
+            }
+            //update
+            int numEffected = 0;
+            query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={contentID}";
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery();
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            return 0;
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+    }
+
+
+    /// <summary>
     /// בודק אם משתמש קיים
     /// </summary>
     internal User GetUserDetails(string Email, string Password)
@@ -152,7 +198,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _Content values('{content.ContentName}','{content.PathFile}','{content.ByUser}','{content.Description}','{content.UploadedDate}')";
+            string query = $@"INSERT INTO _Content values('{content.ContentName}','{content.PathFile}','{content.ByUser}','{content.Description}','{content.UploadedDate}',0)";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
             //שליפת זהות התוכן שהועלה עכשיו

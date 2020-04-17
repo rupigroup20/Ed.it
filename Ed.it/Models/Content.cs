@@ -63,12 +63,22 @@ namespace Ed.it.Models
             ResultList = dBservices.GetSuggestionsOfContentsForGuest();
             return ResultList;
         }
-
+        /// <summary>
+        /// מקבל פרטי מצגת 
+        /// </summary>
         public Content GetContent(string ContentID)
         {
             Content content = new Content();
             content= dBservices.GetContent(ContentID);
             return content;
+        }
+
+        /// <summary>
+        /// עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
+        /// </summary>
+        internal void UpdatePages(int countPages)
+        {
+            dBservices.UpdatePages(countPages);
         }
     }
 }

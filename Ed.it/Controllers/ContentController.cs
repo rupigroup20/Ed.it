@@ -16,10 +16,12 @@ namespace Ed.it.Controllers
 {
     public class ContentController : ApiController
     {
-        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadFiles/";//ניתוב שרת
+        bool Local = true;//עובדים על השרת או מקומי
+
+        string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedContents/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedFilesPub\\";
-        bool Local = true;//עובדים על השרת או מקומי
+        
 
         /// <summary>
         /// הצעת תכנים עבור משתמש רשום
@@ -58,6 +60,25 @@ namespace Ed.it.Controllers
 
         }
 
+        /// <summary>
+        /// חיפוש תכנים לפי תגית
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/Search/{Tag}")]
+        public List<Content> Search(string TagName)
+        {
+            try
+            {
+                Content content = new Content();
+                return content.Search(TagName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
 
         [HttpPost]
         [Route("api/Content/AddContent")]
@@ -78,6 +99,10 @@ namespace Ed.it.Controllers
             }
         }
 
+
+        /// <summary>
+        /// שמירת קובץ התוכן פלוס תמונות של המצגת
+        /// </summary>
         [HttpPost]
         [Route("api/Content/UploadContent/{ByUser}/{ContentName}")]    ///
         public HttpResponseMessage UploadContent(string ByUser, string ContentName)
@@ -115,16 +140,33 @@ namespace Ed.it.Controllers
                         //פיצול מצגת לתמונות
                         using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
                         {
+                            int countPages = 0;
                             foreach (ISlide sld in pres.Slides)
                             {
-                                // Create a full scale image
-                                Bitmap bmp = sld.GetThumbnail(1f, 1f);
-                                fileSavePath = Path.Combine(UrlLocalAlmog, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
-                                // Save the image to disk in JPEG format
-                                bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                            }
-                        }
+                                if (Local)
+                                {
+                                    
+                                    // Create a full scale image
+                                    Bitmap bmp = sld.GetThumbnail(1f, 1f);
 
+                                    fileSavePath = Path.Combine(UrlLocalAlmog, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                                                                                                                                       // Save the image to disk in JPEG format
+                                    bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                }
+                                else
+                                {
+                                    // Create a full scale image
+                                    Bitmap bmp = sld.GetThumbnail(1f, 1f);
+                                    //fileSavePath = Path.Combine(UrlServer, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                    fileSavePath = Path.Combine(HostingEnvironment.MapPath("~/uploadedContents"), string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));                                                                                                                 // Save the image to disk in JPEG format
+                                    bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                }
+                                countPages++;
+                            }
+                            //עדכון מספר עמודים של התוכן בדטה בייס
+                            Content content = new Content();
+                            content.UpdatePages(countPages);
+                        }
 
                     }
                 }

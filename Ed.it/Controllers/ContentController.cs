@@ -85,7 +85,7 @@ namespace Ed.it.Controllers
         /// </summary>
         [HttpGet]
         [Route("api/Content/Search/{Tag}")]
-        public List<Content> Search(string TagName)
+        public List<Content> SearchContents(string TagName)
         {
             try
             {

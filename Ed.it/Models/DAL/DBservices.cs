@@ -121,15 +121,14 @@ public class DBservices
             DataSet ds = new DataSet();
             da.Fill(ds);
             dt = ds.Tables[0];
-            int contentID=0;
+            int contentID;
             if (dt.Rows.Count != 0)
             {
                 contentID = Convert.ToInt16(dt.Rows[0][0]);
             }
             //update
             int numEffected = 0;
-            query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={contentID}";
-            cmd = CreateCommand(query, con);
+            query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={countPages}";
             numEffected += cmd.ExecuteNonQuery();
             return numEffected;
         }
@@ -294,37 +293,6 @@ public class DBservices
         catch (Exception ex)
         {
             return 0;
-            // write to log
-            throw (ex);
-        }
-
-        finally
-        {
-            if (con != null)
-            {
-                // close the db connection
-                con.Close();
-
-            }
-        }
-    }
-
-    public void UpdatePic(string Email, string Urlpic)
-    {
-        try
-        {
-            con = Connect("DBConnectionString");
-            int numEffected = 0;
-            string query = $@"UPDATE  _User
-                            SET UrlPicture='{Urlpic}'
-                            WHERE Email='{Email}'";
-            cmd = CreateCommand(query, con);
-            numEffected = cmd.ExecuteNonQuery(); // execute the command
-            
-        }
-        catch (Exception ex)
-        {
-           
             // write to log
             throw (ex);
         }
@@ -614,6 +582,7 @@ public class DBservices
             dt = ds.Tables[0];
             if (dt.Rows.Count != 0)
             {
+                content.TagsContent = new List<string>();
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());

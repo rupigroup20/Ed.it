@@ -26,7 +26,7 @@ namespace Ed.it.Controllers
 
     public class UserController : ApiController
     {
-        bool Local = true;//עובדים על השרת או מקומי
+        bool Local = false;//עובדים על השרת או מקומי
 
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedPictures";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי

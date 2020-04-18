@@ -32,12 +32,6 @@ namespace Ed.it.Controllers
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedPicturesPub\\";
         
-        
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
 
         [HttpPost]
         [Route("api/User/GetUserDetails")]
@@ -62,8 +56,15 @@ namespace Ed.it.Controllers
         [Route("api/User/GetTags")]
         public List<string> GetTags()
         {
-            TagsUser tagsUser = new TagsUser();          
-            return tagsUser.GetTagsList();
+            try
+            {
+                TagsUser tagsUser = new TagsUser();
+                return tagsUser.GetTagsList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
 
         }
 
@@ -74,8 +75,16 @@ namespace Ed.it.Controllers
         [Route("api/User/CreateUser")]
         public bool CreateUser([FromBody]User NewUser)
         {
-            NewUser.CreateUser();
-            return true;
+            try
+            {
+                NewUser.CreateUser();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
         [HttpPost]
@@ -123,18 +132,7 @@ namespace Ed.it.Controllers
                             httpPostedFile.SaveAs(fileSavePath);
                             //imageLinks.Add("uploadedPicture/" + fname);
                             imageLinks.Add("uploadedPictures/" + fname);
-                            ////פיצול מצגת לתמונות
-                            //using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
-                            //{
-                            //    foreach (ISlide sld in pres.Slides)
-                            //    {
-                            //        // Create a full scale image
-                            //        Bitmap bmp = sld.GetThumbnail(1f, 1f);
-                            //        fileSavePath= Path.Combine(HostingEnvironment.MapPath("~/uploadedPicture"), string.Format("{0}_{1}.jpg", Email.Split('@').First(), sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
-                            //        // Save the image to disk in JPEG format
-                            //        bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                            //    }
-                            //}
+         
 
                         }
                     }
@@ -161,8 +159,7 @@ namespace Ed.it.Controllers
             Thread.CurrentThread.CurrentUICulture = ci;
             List<string> imageLinks = new List<string>();
 
-            
-
+         
             try
             {
                 var httpContext = HttpContext.Current;
@@ -253,8 +250,15 @@ namespace Ed.it.Controllers
         [Route("api/User/UpdateUser")]
         public int Put([FromBody]User NewUser)
         {
-           int numEffected = NewUser.UpdateDetails();
-            return numEffected;
+            try
+            {
+                int numEffected = NewUser.UpdateDetails();
+                return numEffected;
+            }       
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
 

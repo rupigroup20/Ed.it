@@ -121,14 +121,15 @@ public class DBservices
             DataSet ds = new DataSet();
             da.Fill(ds);
             dt = ds.Tables[0];
-            int contentID;
+            int contentID=0;
             if (dt.Rows.Count != 0)
             {
                 contentID = Convert.ToInt16(dt.Rows[0][0]);
             }
             //update
             int numEffected = 0;
-            query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={countPages}";
+            query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={contentID}";
+            cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery();
             return numEffected;
         }
@@ -406,12 +407,12 @@ public class DBservices
                         TagsToSearchList.Add(TagToSearch);//מוסיף את התגית שאנחנו הולכים להוסיף לרשימה
                                                           //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
                                                           //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
-                        query = $@" SELECT *
+                        query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
 			                            from _Liked
-			                            group by ContentID) as L on C.ContentID=L.ContentID
-                            WHERE TagName='{TagToSearch}' 
+			                            group by ContentID) as L on C.ContentID=L.ContentID inner join _User U on U.UserNameByEmail=C.ByUser
+                            WHERE TagName='{TagToSearch}' and C.ByUser<>'{userName}'
                             ORDER BY Likes desc";
                         da = new SqlDataAdapter(query, con);
                         ds = new DataSet();
@@ -435,6 +436,7 @@ public class DBservices
                                     content.Description = ContentTagTable.Rows[j]["Description"].ToString();
                                     content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
                                     content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                                    content.UserPic = ContentTagTable.Rows[j]["UrlPicture"].ToString();
                                     SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
                                     content = new Content();
                                 }
@@ -474,12 +476,12 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             //מביא את 10 התכנים עם הכי הרבה לייקים
-            string query = $@"SELECT Top 10 C.ContentID,C.ContentName,C.PathFile,CAST(Description AS NVARCHAR(200)) as Description,L.Likes
+            string query = $@"SELECT Top 10 C.ContentID,C.ContentName,C.PathFile,CAST(Description AS NVARCHAR(200)) as Description,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
 			                            from _Liked
-			                            group by ContentID) as L on C.ContentID=L.ContentID
-                            Group by C.ContentID,C.ContentName,C.PathFile,L.Likes,CAST(Description AS NVARCHAR(200))
+			                            group by ContentID) as L on C.ContentID=L.ContentID inner join _User as U on U.UserNameByEmail=C.ByUser
+                            Group by C.ContentID,C.ContentName,C.PathFile,L.Likes,CAST(Description AS NVARCHAR(200)),U.UrlPicture
                             ORDER BY Likes desc";
             da = new SqlDataAdapter(query, con);
             DataSet ds = new DataSet();
@@ -499,6 +501,7 @@ public class DBservices
                         content.Description = ContentTagTable.Rows[j]["Description"].ToString();
                         content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
                         content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                        content.UserPic = ContentTagTable.Rows[j]["UrlPicture"].ToString();
                         SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
                         content = new Content();
                     }
@@ -581,6 +584,7 @@ public class DBservices
                             content.Description = ContentTagTable.Rows[j]["Description"].ToString();
                             content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
                             content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                            content.UserPic = ContentTagTable.Rows[j]["UserPic"].ToString();
                             SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
                             content = new Content();
                         }

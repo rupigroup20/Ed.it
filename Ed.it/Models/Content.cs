@@ -61,7 +61,7 @@ namespace Ed.it.Models
         internal List<Content> Search(string tagName)
         {
             List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
-            ResultList = dBservices.GetSuggestionsOfContentsForGuest();
+            ResultList = dBservices.Search(tagName);
             return ResultList;
         }
         /// <summary>

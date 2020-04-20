@@ -64,7 +64,7 @@ namespace Ed.it.Controllers
         /// חיפוש תכנים לפי תגית
         /// </summary>
         [HttpGet]
-        [Route("api/Content/Search/{Tag}")]
+        [Route("api/Content/Search/{TagName}")]
         public List<Content> Search(string TagName)
         {
             try
@@ -205,6 +205,8 @@ namespace Ed.it.Controllers
             Content content = new Content();
             return content.GetContent(ContentID);
         }
+
+  
 
         // DELETE api/values/5
         public void Delete(int id)

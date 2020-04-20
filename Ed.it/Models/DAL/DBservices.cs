@@ -405,8 +405,9 @@ public class DBservices
                     if(!TagsToSearchList.Contains(TagToSearch))//רק אם לא חיפשנו בעבר עבור התגית הספציפית
                     {
                         TagsToSearchList.Add(TagToSearch);//מוסיף את התגית שאנחנו הולכים להוסיף לרשימה
-                                                          //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
-                                                          //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
+                                                          
+                        //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים                       
+                        //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
                         query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
@@ -532,7 +533,7 @@ public class DBservices
     internal List<Content> Search(string TagToSearch)
     {
         Content content = new Content();
-        List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
         DataTable TagsRealetedTable = new DataTable();//טבלה עבור התגיות שמשתייכות לתגית המבוקשת
         DataTable ContentTagTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
 
@@ -554,17 +555,18 @@ public class DBservices
             DataSet ds = new DataSet();
             da.Fill(ds);
             TagsRealetedTable = ds.Tables[0];
-
+            string TagName ="";
             for (int i = 0; i < TagsRealetedTable.Rows.Count; i++)
             {
+                TagName = TagsRealetedTable.Rows[i]["TagName"].ToString();
                 //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
                 //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
-                query = $@" SELECT *
+                query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
 			                            from _Liked
-			                            group by ContentID) as L on C.ContentID=L.ContentID
-                            WHERE TagName='{TagsRealetedTable.Rows[i]["TagName"].ToString()}' 
+			                            group by ContentID) as L on C.ContentID=L.ContentID inner join _User U on U.UserNameByEmail=C.ByUser
+                            WHERE TagName='{TagName}' 
                             ORDER BY Likes desc";
                 da = new SqlDataAdapter(query, con);
                 ds = new DataSet();
@@ -578,14 +580,14 @@ public class DBservices
                     if (!string.IsNullOrEmpty(ContentTagTable.Rows[j]["ContentID"].ToString()))
                     {
                         content.ContentID = Convert.ToInt32(ContentTagTable.Rows[j]["ContentID"]);
-                        if (!SuggestionList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                        if (!ResultList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
                         {
                             content.ContentName = ContentTagTable.Rows[j]["ContentName"].ToString();
                             content.Description = ContentTagTable.Rows[j]["Description"].ToString();
                             content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
                             content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
-                            content.UserPic = ContentTagTable.Rows[j]["UserPic"].ToString();
-                            SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
+                            content.UserPic = ContentTagTable.Rows[j]["UrlPicture"].ToString();
+                            ResultList.Add(content);//מוסיף לרשימת ההמלצות
                             content = new Content();
                         }
                     }
@@ -608,7 +610,7 @@ public class DBservices
             }
         }
 
-        return SuggestionList;
+        return ResultList;
     }
 
 

@@ -23,7 +23,6 @@ namespace Ed.it.Controllers
 {
     //public sealed class Presentation : IPresentation,
     //IPresentationComponent, IDisposable
-
     public class UserController : ApiController
     {
         bool Local = false;//עובדים על השרת או מקומי
@@ -31,7 +30,8 @@ namespace Ed.it.Controllers
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedPictures";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedPicturesPub\\";
-        
+        enum Activity { watch,like,addTag };//עדכון ניקוד תגיות בהתאם למקרה
+
 
         [HttpPost]
         [Route("api/User/GetUserDetails")]
@@ -259,6 +259,17 @@ namespace Ed.it.Controllers
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// עדכון ניקוד עבור יוזר בעקבות צפיה בתוכן
+        /// </summary>
+        [HttpPut]
+        [Route("api/User/UpdateScore/{ContentID}/{UserName}/{Case}")]
+        public void UpdateScore(string ContentID, string UserName,string Case)
+        {
+            User user = new Models.User();
+            
         }
 
 

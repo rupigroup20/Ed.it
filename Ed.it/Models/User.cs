@@ -67,5 +67,35 @@ namespace Ed.it.Models
         {
             dBservices.UpdatePic(Email, Urlpic);
         }
+
+        /// <summary>
+        /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
+        /// </summary>
+        internal void UpdateScore(string Case,string UserName,int ContentID)
+        {
+            int Score = 0;
+            bool Update = true;
+
+            switch (Case)
+            {
+                case "watch":
+                    Score = 1;
+                    Update=dBservices.CheckIfWatched(UserName, ContentID);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
+                    break;
+
+                case "like":
+                    Score = 2;
+                    dBservices.Like(UserName, ContentID, "like");
+                    break;
+
+                case "unlike":
+                    Score = -2;
+                    dBservices.Like(UserName, ContentID,"unlike");
+                    break;
+            }
+
+            if(Update)
+                dBservices.UpdateScore(Score, UserName,ContentID);
+        }
     }
 }

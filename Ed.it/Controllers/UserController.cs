@@ -266,10 +266,10 @@ namespace Ed.it.Controllers
         /// </summary>
         [HttpPut]
         [Route("api/User/UpdateScore/{ContentID}/{UserName}/{Case}")]
-        public void UpdateScore(string ContentID, string UserName,string Case)
+        public void UpdateScore(int ContentID, string UserName,string Case)
         {
             User user = new Models.User();
-            
+            user.UpdateScore(Case, UserName,ContentID);
         }
 
 

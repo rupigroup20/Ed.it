@@ -18,6 +18,7 @@ namespace Ed.it.Models
         public string ByUser { get; set; }
         public string UserPic { get; set; }
         public int PagesNumber { get; set; }
+        public bool LikedByUserWhoWatch { get; set; }
         DBservices dBservices = new DBservices();
 
         public Content()
@@ -67,10 +68,10 @@ namespace Ed.it.Models
         /// <summary>
         /// מקבל פרטי מצגת 
         /// </summary>
-        public Content GetContent(string ContentID)
+        public Content GetContent(string ContentID,string UserName)
         {
             Content content = new Content();
-            content= dBservices.GetContent(ContentID);
+            content= dBservices.GetContent(ContentID, UserName);
             return content;
         }
 

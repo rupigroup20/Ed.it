@@ -105,6 +105,9 @@ public class DBservices
         }
     }
 
+ 
+
+
 
     /// <summary>
     ///  עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
@@ -614,7 +617,7 @@ public class DBservices
     }
 
 
-    internal Content GetContent(string ContentID)
+    internal Content GetContent(string ContentID,string UserName)
     {
         Content content = new Content();
         try
@@ -659,6 +662,22 @@ public class DBservices
                     content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());
                 }
             }
+            //האם המשתמש עשה לייק על התוכן בעבר
+            query = $@"SELECT *
+                              FROM _Liked
+                              WHERE UserName='{UserName}' and ContentID={ContentID}";
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                content.LikedByUserWhoWatch = false;
+            }
+            else
+            {
+                content.LikedByUserWhoWatch = true;
+            }
 
         }
         catch (Exception ex)
@@ -677,5 +696,159 @@ public class DBservices
         }
 
         return content;
+    }
+
+    /// <summary>
+    /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
+    /// </summary>
+    internal void UpdateScore(int score, string userName, int contentID)
+    {
+        DataTable ScoreTable = new DataTable();
+        SqlDataAdapter daUpdate;
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT *
+                              FROM _TagsUsedOn
+                              WHERE UserName='{userName}'
+                              ORDER BY Score desc";
+            daUpdate = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            daUpdate.Fill(ds);
+            ScoreTable = ds.Tables[0];
+
+
+            //קבלת התגיות המשתייכות לתוכן
+            string query1 = $@"SELECT TagName
+                    FROM _ContentRelatedTo
+                    WHERE ContentID={contentID}";
+            da = new SqlDataAdapter(query1, con);
+            DataSet ds1 = new DataSet();
+            da.Fill(ds1);
+            dt = ds1.Tables[0];
+
+            //רשימת התגים הקיימים בטבלת הניקוד
+            var listTags = ScoreTable.Rows.OfType<DataRow>()
+                   .Select(dr => dr.Field<string>("TagName")).ToList();
+            //התגים של התוכן הנצפה
+            var listTagsOfContent = dt.Rows.OfType<DataRow>()
+                   .Select(dr => dr.Field<string>("TagName")).ToList();
+
+
+            int index = -1;
+            for (int i = 0; i < listTagsOfContent.Count; i++)
+            {
+                index = listTags.FindIndex(a => a == listTagsOfContent[i].Trim());
+                int numEffected = 0;
+
+                if (index != -1)//קיים בטבלת הניקוד של המשתמש
+                {
+                    query = $@"UPDATE _TagsUsedOn SET Score=Score+{score} WHERE TagName='{ScoreTable.Rows[index]["TagName"]}' and UserName='{userName}'";
+                }
+                else  //לא קיים בטבלת הניקוד לכן נוספת תגית חדשה
+                {
+                    query = $@"INSERT INTO _TagsUsedOn values({score},'{userName}','{listTagsOfContent[i]}')";
+                }
+                cmd = CreateCommand(query, con);
+                numEffected += cmd.ExecuteNonQuery();
+                index = -1;
+            }
+        
+
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+    }
+
+    /// <summary>
+    /// בודק אם משתמש צפה בתוכן כבר או לא
+    /// </summary>
+    internal bool CheckIfWatched(string userName,int ContentId)
+    {
+        DataTable WatchedTable = new DataTable();
+        bool UpdateScore;
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT *
+                              FROM _Watched
+                              WHERE UserName='{userName}' and ContentID={ContentId}";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            WatchedTable = ds.Tables[0];
+
+            if (WatchedTable.Rows.Count==0)//משתמש לא צפה בתוכן עדיין
+            {
+                int numEffected = 0;
+                query = $@"INSERT INTO _Watched values('{userName}',{ContentId})";
+                cmd = CreateCommand(query, con);
+                numEffected += cmd.ExecuteNonQuery();
+                UpdateScore=true;//יעדכן ניקוד
+            }
+            else
+            {
+                UpdateScore=false;//לא יעדכן ניקוד
+            }
+
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+        return UpdateScore;
+    }
+
+    /// <summary>
+    /// משתמש הוריד לייק מהתוכן
+    /// </summary>
+    internal void Like(string UserName,int ContentID,string LikeORUnlike)
+    {
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query="";
+            //אם עשה אנלייק מוחק רשומה ,אחרת מכניס
+            if (LikeORUnlike == "unlike")
+                query = $@"DELETE from _Liked WHERE UserName='{UserName}' and ContentID={ContentID}";
+            else
+                query = $@"INSERT INTO _Liked values('{UserName}',{ContentID})";
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
     }
 }

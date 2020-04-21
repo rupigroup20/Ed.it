@@ -199,11 +199,11 @@ namespace Ed.it.Controllers
         }
 
         [HttpGet]
-        [Route("api/Content/GetContent/{ContentID}")]
-        public Content GetContent(string ContentID)
+        [Route("api/Content/GetContent/{ContentID}/{UserName}")]
+        public Content GetContent(string ContentID,string UserName)
         {
             Content content = new Content();
-            return content.GetContent(ContentID);
+            return content.GetContent(ContentID, UserName);
         }
 
   

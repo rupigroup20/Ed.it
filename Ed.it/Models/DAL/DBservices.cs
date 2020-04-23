@@ -772,9 +772,9 @@ public class DBservices
     }
 
     /// <summary>
-    /// בודק אם משתמש צפה בתוכן כבר או לא
+    // בודק אם משתמש צפה בתוכן כבר או לא
     /// </summary>
-    internal bool CheckIfWatched(string userName,int ContentId)
+    internal bool CheckIfWatchedAndDownloaded(string userName,int ContentId,string Case)
     {
         DataTable WatchedTable = new DataTable();
         bool UpdateScore;
@@ -792,14 +792,21 @@ public class DBservices
             if (WatchedTable.Rows.Count==0)//משתמש לא צפה בתוכן עדיין
             {
                 int numEffected = 0;
-                query = $@"INSERT INTO _Watched values('{userName}',{ContentId})";
+                query = $@"INSERT INTO _Watched values('{userName}',{ContentId},'false')";
                 cmd = CreateCommand(query, con);
                 numEffected += cmd.ExecuteNonQuery();
                 UpdateScore=true;//יעדכן ניקוד
             }
             else
             {
-                UpdateScore=false;//לא יעדכן ניקוד
+                if (Case == "downloaded" && WatchedTable.Rows[0]["Downloaded"].ToString() == "false")//אם המקרה הוא הורדת מצגת בודק אם הורד בעבר או לא
+                {
+                    UpdateScore = true;
+                }
+                else //צפה כבר או הוריד כבר מצגת
+                {
+                    UpdateScore = false;//לא יעדכן ניקוד
+                }
             }
 
         }

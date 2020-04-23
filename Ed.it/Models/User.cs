@@ -80,18 +80,25 @@ namespace Ed.it.Models
             {
                 case "watch":
                     Score = 1;
-                    Update=dBservices.CheckIfWatched(UserName, ContentID);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
+                    Update=dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID,Case);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
+                    break;
+
+                case "download":
+                    Score = 3;
+                    dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם הוריד מצגת בעבר
                     break;
 
                 case "like":
                     Score = 2;
-                    dBservices.Like(UserName, ContentID, "like");
+                    dBservices.Like(UserName, ContentID, Case);
                     break;
 
                 case "unlike":
                     Score = -2;
-                    dBservices.Like(UserName, ContentID,"unlike");
+                    dBservices.Like(UserName, ContentID, Case);
                     break;
+
+               
             }
 
             if(Update)

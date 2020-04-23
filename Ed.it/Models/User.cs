@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Data;
 
 
 namespace Ed.it.Models
@@ -66,6 +67,10 @@ namespace Ed.it.Models
         public void UpdatePic(string Email, string Urlpic)
         {
             dBservices.UpdatePic(Email, Urlpic);
+        }
+        public DBservices GetTOPUserLikedContent(string UserName)
+        {
+            return dBservices.GetTOPUserLikedContent(UserName);
         }
     }
 }

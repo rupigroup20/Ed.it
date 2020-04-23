@@ -81,25 +81,6 @@ namespace Ed.it.Controllers
 
 
         /// <summary>
-        /// חיפוש תכנים לפי תגית
-        /// </summary>
-        [HttpGet]
-        [Route("api/Content/Search/{Tag}")]
-        public List<Content> SearchContents(string TagName)
-        {
-            try
-            {
-                Content content = new Content();
-                return content.Search(TagName);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-        }
-
-        /// <summary>
         /// שמירת תוכן בעת העלאה
         /// </summary>
         [HttpPost]
@@ -204,6 +185,26 @@ namespace Ed.it.Controllers
         {
             Content content = new Content();
             return content.GetContent(ContentID);
+        }
+
+        [HttpGet]
+        [Route("api/Content/GetUserContents/{UserName}")]
+        public  List<Content> GetUserContents(string UserName)
+        {
+            List<Content> UserContent = new List<Content>();
+            Content content = new Content();
+            UserContent = content.GetUserContents(UserName);
+            return UserContent;
+        }
+
+        [HttpGet]
+        [Route("api/Content/GetUserLikedContents/{UserName}")]
+        public List<Content> GetUserLikedContents(string UserName)
+        {
+            List<Content> UserLikedContent = new List<Content>();
+            Content content = new Content();
+            UserLikedContent = content.GetUserLikedContents(UserName);
+            return UserLikedContent;
         }
 
         // DELETE api/values/5

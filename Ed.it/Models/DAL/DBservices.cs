@@ -105,6 +105,9 @@ public class DBservices
         }
     }
 
+ 
+
+
 
     /// <summary>
     ///  עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
@@ -405,8 +408,9 @@ public class DBservices
                     if(!TagsToSearchList.Contains(TagToSearch))//רק אם לא חיפשנו בעבר עבור התגית הספציפית
                     {
                         TagsToSearchList.Add(TagToSearch);//מוסיף את התגית שאנחנו הולכים להוסיף לרשימה
-                                                          //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
-                                                          //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
+                                                          
+                        //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים                       
+                        //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
                         query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
@@ -532,7 +536,7 @@ public class DBservices
     internal List<Content> Search(string TagToSearch)
     {
         Content content = new Content();
-        List<Content> SuggestionList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
         DataTable TagsRealetedTable = new DataTable();//טבלה עבור התגיות שמשתייכות לתגית המבוקשת
         DataTable ContentTagTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
 
@@ -554,17 +558,18 @@ public class DBservices
             DataSet ds = new DataSet();
             da.Fill(ds);
             TagsRealetedTable = ds.Tables[0];
-
+            string TagName ="";
             for (int i = 0; i < TagsRealetedTable.Rows.Count; i++)
             {
+                TagName = TagsRealetedTable.Rows[i]["TagName"].ToString();
                 //בניית השאילתה שמחזירה את כל התכנים של התגית המבוקשת בסדר יורד לפי כמות הלייקים
                 //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
-                query = $@" SELECT *
+                query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
                             inner join( select count(*) as Likes,ContentID
 			                            from _Liked
-			                            group by ContentID) as L on C.ContentID=L.ContentID
-                            WHERE TagName='{TagsRealetedTable.Rows[i]["TagName"].ToString()}' 
+			                            group by ContentID) as L on C.ContentID=L.ContentID inner join _User U on U.UserNameByEmail=C.ByUser
+                            WHERE TagName='{TagName}' 
                             ORDER BY Likes desc";
                 da = new SqlDataAdapter(query, con);
                 ds = new DataSet();
@@ -578,14 +583,14 @@ public class DBservices
                     if (!string.IsNullOrEmpty(ContentTagTable.Rows[j]["ContentID"].ToString()))
                     {
                         content.ContentID = Convert.ToInt32(ContentTagTable.Rows[j]["ContentID"]);
-                        if (!SuggestionList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                        if (!ResultList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
                         {
                             content.ContentName = ContentTagTable.Rows[j]["ContentName"].ToString();
                             content.Description = ContentTagTable.Rows[j]["Description"].ToString();
                             content.PathFile = ContentTagTable.Rows[j]["PathFile"].ToString();
                             content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
-                            content.UserPic = ContentTagTable.Rows[j]["UserPic"].ToString();
-                            SuggestionList.Add(content);//מוסיף לרשימת ההמלצות
+                            content.UserPic = ContentTagTable.Rows[j]["UrlPicture"].ToString();
+                            ResultList.Add(content);//מוסיף לרשימת ההמלצות
                             content = new Content();
                         }
                     }
@@ -608,11 +613,11 @@ public class DBservices
             }
         }
 
-        return SuggestionList;
+        return ResultList;
     }
 
 
-    internal Content GetContent(string ContentID)
+    internal Content GetContent(string ContentID,string UserName)
     {
         Content content = new Content();
         try
@@ -656,6 +661,22 @@ public class DBservices
                 {
                     content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());
                 }
+            }
+            //האם המשתמש עשה לייק על התוכן בעבר
+            query = $@"SELECT *
+                              FROM _Liked
+                              WHERE UserName='{UserName}' and ContentID={ContentID}";
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count == 0)
+            {
+                content.LikedByUserWhoWatch = false;
+            }
+            else
+            {
+                content.LikedByUserWhoWatch = true;
             }
 
         }
@@ -715,6 +736,62 @@ public class DBservices
                     UserContent.Add(content);
                 }
             }
+    /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
+    /// </summary>
+    internal void UpdateScore(int score, string userName, int contentID)
+    {
+        DataTable ScoreTable = new DataTable();
+        SqlDataAdapter daUpdate;
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT *
+                              FROM _TagsUsedOn
+                              WHERE UserName='{userName}'
+                              ORDER BY Score desc";
+            daUpdate = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            daUpdate.Fill(ds);
+            ScoreTable = ds.Tables[0];
+
+
+            //קבלת התגיות המשתייכות לתוכן
+            string query1 = $@"SELECT TagName
+                    FROM _ContentRelatedTo
+                    WHERE ContentID={contentID}";
+            da = new SqlDataAdapter(query1, con);
+            DataSet ds1 = new DataSet();
+            da.Fill(ds1);
+            dt = ds1.Tables[0];
+
+            //רשימת התגים הקיימים בטבלת הניקוד
+            var listTags = ScoreTable.Rows.OfType<DataRow>()
+                   .Select(dr => dr.Field<string>("TagName")).ToList();
+            //התגים של התוכן הנצפה
+            var listTagsOfContent = dt.Rows.OfType<DataRow>()
+                   .Select(dr => dr.Field<string>("TagName")).ToList();
+
+
+            int index = -1;
+            for (int i = 0; i < listTagsOfContent.Count; i++)
+            {
+                index = listTags.FindIndex(a => a == listTagsOfContent[i].Trim());
+                int numEffected = 0;
+
+                if (index != -1)//קיים בטבלת הניקוד של המשתמש
+                {
+                    query = $@"UPDATE _TagsUsedOn SET Score=Score+{score} WHERE TagName='{ScoreTable.Rows[index]["TagName"]}' and UserName='{userName}'";
+                }
+                else  //לא קיים בטבלת הניקוד לכן נוספת תגית חדשה
+                {
+                    query = $@"INSERT INTO _TagsUsedOn values({score},'{userName}','{listTagsOfContent[i]}')";
+                }
+                cmd = CreateCommand(query, con);
+                numEffected += cmd.ExecuteNonQuery();
+                index = -1;
+            }
+        
+
         }
         catch (Exception ex)
         {
@@ -769,6 +846,48 @@ public class DBservices
                     UserLikedContent.Add(content);
                 }
             }
+            }
+        }
+    }
+
+    /// <summary>
+    // בודק אם משתמש צפה בתוכן כבר או לא
+    /// </summary>
+    internal bool CheckIfWatchedAndDownloaded(string userName,int ContentId,string Case)
+    {
+        DataTable WatchedTable = new DataTable();
+        bool UpdateScore;
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT *
+                              FROM _Watched
+                              WHERE UserName='{userName}' and ContentID={ContentId}";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            WatchedTable = ds.Tables[0];
+
+            if (WatchedTable.Rows.Count==0)//משתמש לא צפה בתוכן עדיין
+            {
+                int numEffected = 0;
+                query = $@"INSERT INTO _Watched values('{userName}',{ContentId},'false')";
+                cmd = CreateCommand(query, con);
+                numEffected += cmd.ExecuteNonQuery();
+                UpdateScore=true;//יעדכן ניקוד
+            }
+            else
+            {
+                if (Case == "downloaded" && WatchedTable.Rows[0]["Downloaded"].ToString() == "false")//אם המקרה הוא הורדת מצגת בודק אם הורד בעבר או לא
+                {
+                    UpdateScore = true;
+                }
+                else //צפה כבר או הוריד כבר מצגת
+                {
+                    UpdateScore = false;//לא יעדכן ניקוד
+                }
+            }
+
         }
         catch (Exception ex)
         {
@@ -785,7 +904,7 @@ public class DBservices
             }
         }
 
-        return UserLikedContent;
+        return UpdateScore;
     }
 
     public DBservices GetTOPUserLikedContent(string UserName)
@@ -813,15 +932,41 @@ public class DBservices
             // write errors to log file
             // try to handle the error
             throw ex;
+            }
+        }
+        return This;
+    }
+
+    /// <summary>
+    /// משתמש הוריד לייק מהתוכן
+    /// </summary>
+    internal void Like(string UserName,int ContentID,string LikeORUnlike)
+    {
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query="";
+            //אם עשה אנלייק מוחק רשומה ,אחרת מכניס
+            if (LikeORUnlike == "unlike")
+                query = $@"DELETE from _Liked WHERE UserName='{UserName}' and ContentID={ContentID}";
+            else
+                query = $@"INSERT INTO _Liked values('{UserName}',{ContentID})";
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
         }
 
         finally
         {
             if (con != null)
             {
+                // close the db connection
                 con.Close();
             }
         }
-        return this;
     }
 }

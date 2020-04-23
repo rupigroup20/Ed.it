@@ -71,6 +71,42 @@ namespace Ed.it.Models
         public DBservices GetTOPUserLikedContent(string UserName)
         {
             return dBservices.GetTOPUserLikedContent(UserName);
+
+        /// <summary>
+        /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
+        /// </summary>
+        internal void UpdateScore(string Case,string UserName,int ContentID)
+        {
+            int Score = 0;
+            bool Update = true;
+
+            switch (Case)
+            {
+                case "watch":
+                    Score = 1;
+                    Update=dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID,Case);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
+                    break;
+
+                case "download":
+                    Score = 3;
+                    dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם הוריד מצגת בעבר
+                    break;
+
+                case "like":
+                    Score = 2;
+                    dBservices.Like(UserName, ContentID, Case);
+                    break;
+
+                case "unlike":
+                    Score = -2;
+                    dBservices.Like(UserName, ContentID, Case);
+                    break;
+
+               
+            }
+
+            if(Update)
+                dBservices.UpdateScore(Score, UserName,ContentID);
         }
     }
 }

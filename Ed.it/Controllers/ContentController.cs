@@ -64,7 +64,7 @@ namespace Ed.it.Controllers
         /// חיפוש תכנים לפי תגית
         /// </summary>
         [HttpGet]
-        [Route("api/Content/Search/{Tag}")]
+        [Route("api/Content/Search/{TagName}")]
         public List<Content> Search(string TagName)
         {
             try
@@ -180,11 +180,11 @@ namespace Ed.it.Controllers
         }
 
         [HttpGet]
-        [Route("api/Content/GetContent/{ContentID}")]
-        public Content GetContent(string ContentID)
+        [Route("api/Content/GetContent/{ContentID}/{UserName}")]
+        public Content GetContent(string ContentID,string UserName)
         {
             Content content = new Content();
-            return content.GetContent(ContentID);
+            return content.GetContent(ContentID, UserName);
         }
 
         [HttpGet]

@@ -18,6 +18,7 @@ using Microsoft.Office.Interop.PowerPoint;
 using System.Drawing;
 using Aspose.Slides;
 using System.Configuration;
+using DataTable = System.Data.DataTable;
 
 namespace Ed.it.Controllers
 {
@@ -261,6 +262,14 @@ namespace Ed.it.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("api/User/TOPUserLikedContent/{UserName}")]
+        public DataTable GetTOPUserLikedContent(string UserName)
+        {
+            User user = new User();
+            DBservices dbs = new DBservices();
+            dbs= user.GetTOPUserLikedContent(UserName);
+            return dbs.dt ;
         /// <summary>
         /// עדכון ניקוד עבור יוזר בעקבות צפיה בתוכן
         /// </summary>

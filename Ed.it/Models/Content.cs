@@ -83,5 +83,19 @@ namespace Ed.it.Models
         {
             dBservices.UpdatePages(countPages);
         }
+
+        public List<Content> GetUserContents(string UserName)
+        {
+            List<Content> UserContent = new List<Content>();
+            UserContent = dBservices.GetUserContents(UserName);
+            return UserContent;
+        }
+
+        public List<Content> GetUserLikedContents(string UserName)
+        {
+            List<Content> UserLikedContent = new List<Content>();
+            UserLikedContent = dBservices.GetUserLikedContents(UserName);
+            return UserLikedContent;
+        }
     }
 }

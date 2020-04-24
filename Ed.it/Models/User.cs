@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Data;
 
 
 namespace Ed.it.Models
@@ -67,6 +68,9 @@ namespace Ed.it.Models
         {
             dBservices.UpdatePic(Email, Urlpic);
         }
+        public DBservices GetTOPUserLikedContent(string UserName)
+        {
+            return dBservices.GetTOPUserLikedContent(UserName);
 
         /// <summary>
         /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש

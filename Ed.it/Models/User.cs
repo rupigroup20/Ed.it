@@ -83,7 +83,7 @@ namespace Ed.it.Models
                     Update=dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID,Case);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
                     break;
 
-                case "download":
+                case "downloaded":
                     Score = 3;
                     dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם הוריד מצגת בעבר
                     break;

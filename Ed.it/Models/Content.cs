@@ -13,6 +13,7 @@ namespace Ed.it.Models
         public string PathFile { get; set; }
         public string Description { get; set; }
         public List<string> TagsContent { get; set; }//תגים שהתוכן מתויג בו
+        public List<Comments> CommentsList { get; set; }
         public string UploadedDate { get; set; }
         public int Likes { get; set; }
         public string ByUser { get; set; }

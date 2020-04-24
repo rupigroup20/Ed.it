@@ -81,7 +81,7 @@ public class DBservices
 
             for (int i = 0; i < user.TagsUser.Count; i++)
             {
-                string query2 = $@"INSERT INTO _TagsUsedOn values({1},'{user.Email.Split('@').First()}', '{user.TagsUser[i]}')";
+                string query2 = $@"INSERT INTO _TagsUsedOn values({3},'{user.Email.Split('@').First()}', '{user.TagsUser[i]}')";
                 cmd= CreateCommand(query2, con);
                 numEffected += cmd.ExecuteNonQuery();
             }
@@ -662,6 +662,31 @@ public class DBservices
                     content.TagsContent.Add(dt.Rows[i]["TagName"].ToString());
                 }
             }
+
+            //קבלת רשימת תגובות על המצגת
+            query = $@" SELECT C.UserName,C.Comment,C.PublishDate,U.UrlPicture,U.Name
+                        FROM _Comments C inner join _User U on C.UserName=U.UserNameByEmail 
+                        WHERE ContentID={ContentID}
+                        order by PublishDate desc ";
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+                Comments comment = new Comments();
+                content.CommentsList = new List<Comments>();
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    comment.NameWhoCommented = dt.Rows[i]["Name"].ToString();
+                    comment.PublishedDate = DateTime.Parse(dt.Rows[i]["PublishDate"].ToString()).ToString("dd/MM/yyyy H:mm");
+                    comment.Comment= dt.Rows[i]["Comment"].ToString();
+                    comment.UrlPictureWhoCommented = dt.Rows[i]["UrlPicture"].ToString();
+                    content.CommentsList.Add(comment);
+                    comment = new Comments();
+                }
+            }
+
             //האם המשתמש עשה לייק על התוכן בעבר
             query = $@"SELECT *
                               FROM _Liked
@@ -799,9 +824,13 @@ public class DBservices
             }
             else
             {
-                if (Case == "downloaded" && WatchedTable.Rows[0]["Downloaded"].ToString() == "false")//אם המקרה הוא הורדת מצגת בודק אם הורד בעבר או לא
+                if (Case == "downloaded" && WatchedTable.Rows[0]["Downloaded"].ToString() == "False")//אם המקרה הוא הורדת מצגת בודק אם הורד בעבר או לא
                 {
                     UpdateScore = true;
+                    int numEffected = 0;
+                    query = $@"UPDATE _Watched SET Downloaded='True' WHERE UserName='{userName}' and ContentID={ContentId} ";
+                    cmd = CreateCommand(query, con);
+                    numEffected += cmd.ExecuteNonQuery();
                 }
                 else //צפה כבר או הוריד כבר מצגת
                 {

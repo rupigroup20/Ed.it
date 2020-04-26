@@ -25,6 +25,7 @@ public class DBservices
 
 
 
+
     //--------------------------------------------------------------------------------------------------
     // This method creates a connection to the database according to the connectionString name in the web.config 
     //--------------------------------------------------------------------------------------------------
@@ -724,43 +725,6 @@ public class DBservices
     }
 
     /// <summary>
-    ///  שליפת רשימה של כל התכנים שהעלה משתמש מסויים + כמות לייקים לתוכן
-    /// </summary>
-    public List<Content> GetUserContents(string UserName)
-    { // לסיים
-        List<Content> UserContent = new List<Content>();
-
-        try
-        {
-            con = Connect("DBConnectionString");
-            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
-                              from _Content C inner join (select count( ContentID) as Likes, ContentID
-                                                          from _Liked
-                                                          group by ContentID) as L on C.ContentID=L.ContentID 
-                              inner join _User U on C.ByUser=U.UserNameByEmail
-                              where C.ByUser='{UserName}'";
-            da = new SqlDataAdapter(query, con);
-            DataSet ds = new DataSet();
-            da.Fill(ds);
-            dt = ds.Tables[0];
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
-                {
-                    Content content = new Content();
-                    content.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
-                    content.ContentName = dt.Rows[i]["ContentName"].ToString();
-                    content.PathFile = dt.Rows[i]["PathFile"].ToString();
-                    content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";
-                    content.ByUser = dt.Rows[i]["ByUser"].ToString();
-                    content.Description = dt.Rows[i]["Description"].ToString();
-                    content.UploadedDate = dt.Rows[i]["UploadDate"].ToString();
-                    content.Likes = Convert.ToInt32(dt.Rows[i]["Likes"]);
-                    content.UserPic = dt.Rows[i]["UserPic"].ToString();
-                    content.PagesNumber = Convert.ToInt32(dt.Rows[i]["PagesNumber"]);
-                    UserContent.Add(content);
-                }
-            }
     /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
     /// </summary>
     internal void UpdateScore(int score, string userName, int contentID)
@@ -829,48 +793,6 @@ public class DBservices
             {
                 // close the db connection
                 con.Close();
-
-            }
-        }
-
-        return UserContent;
-    }
-
-    public List<Content> GetUserLikedContents(string UserName)
-    { // לסיים
-        List<Content> UserLikedContent = new List<Content>();
-
-        try
-        {
-            con = Connect("DBConnectionString");
-            string query = $@"select C.*,U.UrlPicture as UserPic
-                              from _Content C inner join _User U on C.ByUser=U.UserNameByEmail 
-                              where ContentID in 
-                                                (select ContentID
-                                                 from _Liked
-                                                 where UserName='{UserName}')";
-            da = new SqlDataAdapter(query, con);
-            DataSet ds = new DataSet();
-            da.Fill(ds);
-            dt = ds.Tables[0];
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
-                {
-                    Content content = new Content();
-                    content.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
-                    content.ContentName = dt.Rows[i]["ContentName"].ToString();
-                    content.PathFile = dt.Rows[i]["PathFile"].ToString();
-                    content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";
-                    content.ByUser = dt.Rows[i]["ByUser"].ToString();
-                    content.Description = dt.Rows[i]["Description"].ToString();
-                    content.UploadedDate = dt.Rows[i]["UploadDate"].ToString();
-                    //content.Likes = Convert.ToInt32(dt.Rows[i]["Likes"]);
-                    content.UserPic = dt.Rows[i]["UserPic"].ToString();
-                    content.PagesNumber = Convert.ToInt32(dt.Rows[i]["PagesNumber"]);
-                    UserLikedContent.Add(content);
-                }
-            }
             }
         }
     }
@@ -929,41 +851,9 @@ public class DBservices
             {
                 // close the db connection
                 con.Close();
-
             }
         }
-
         return UpdateScore;
-    }
-
-    public DBservices GetTOPUserLikedContent(string UserName)
-    {
-        SqlConnection con = null;
-        try
-        {
-            con = Connect("DBConnectionString");
-            string query = $@"select top 8 C.ContentName, L.Likes 
-                              from _Content C inner join
-                                         (select count(ContentID) as Likes, ContentID
-                                          from _Liked
-                                          group by ContentID) L on C.ContentID=L.ContentID
-                                          where C.ByUser='{UserName}'
-                                          order by L.Likes desc";
-            da = new SqlDataAdapter(query, con);
-            SqlCommandBuilder builder = new SqlCommandBuilder(da);
-            DataSet ds = new DataSet();
-            da.Fill(ds);
-            dt = ds.Tables[0];
-        }
-
-        catch (Exception ex)
-        {
-            // write errors to log file
-            // try to handle the error
-            throw ex;
-            }
-        }
-        return This;
     }
 
     /// <summary>
@@ -997,5 +887,212 @@ public class DBservices
                 con.Close();
             }
         }
+    }
+
+    /// <summary>
+    /// הוספת תגובה למצגת
+    /// </summary>
+    internal List<Comments> AddComment(Comments comments)
+    {
+        List<Comments> commentList = new List<Comments>();
+        try
+        {
+            con = Connect("DBConnectionString");
+            int numEffected = 0;
+            string query = $@"INSERT INTO _Comments values('{comments.NameWhoCommented}',{comments.ContentID},'{comments.Comment}','{comments.PublishedDate}')";
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery(); // execute the command
+            
+            //שליפת התגובות מחדש
+            query = $@" SELECT C.UserName,C.Comment,C.PublishDate,U.UrlPicture,U.Name
+                        FROM _Comments C inner join _User U on C.UserName=U.UserNameByEmail 
+                        WHERE ContentID={comments.ContentID}
+                        order by PublishDate desc ";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+                Comments comment = new Comments();
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    comment.NameWhoCommented = dt.Rows[i]["Name"].ToString();
+                    comment.PublishedDate = DateTime.Parse(dt.Rows[i]["PublishDate"].ToString()).ToString("dd/MM/yyyy H:mm");
+                    comment.Comment= dt.Rows[i]["Comment"].ToString();
+                    comment.UrlPictureWhoCommented = dt.Rows[i]["UrlPicture"].ToString();
+                    commentList.Add(comment);
+                    comment = new Comments();
+                }
+            }
+
+            return commentList;
+
+
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+    }
+
+    /// <summary>
+    ///  שליפת רשימה של כל התכנים שהעלה משתמש מסויים + כמות לייקים לתוכן
+    /// </summary>
+    public List<Content> GetUserContents(string UserName)
+    { // לסיים
+        List<Content> UserContent = new List<Content>();
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
+                              from _Content C inner join (select count( ContentID) as Likes, ContentID
+                                                          from _Liked
+                                                          group by ContentID) as L on C.ContentID=L.ContentID 
+                              inner join _User U on C.ByUser=U.UserNameByEmail
+                              where C.ByUser='{UserName}'";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+                {
+                    Content content = new Content();
+                    content.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
+                    content.ContentName = dt.Rows[i]["ContentName"].ToString();
+                    content.PathFile = dt.Rows[i]["PathFile"].ToString();
+                    content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";
+                    content.ByUser = dt.Rows[i]["ByUser"].ToString();
+                    content.Description = dt.Rows[i]["Description"].ToString();
+                    content.UploadedDate = dt.Rows[i]["UploadDate"].ToString();
+                    content.Likes = Convert.ToInt32(dt.Rows[i]["Likes"]);
+                    content.UserPic = dt.Rows[i]["UserPic"].ToString();
+                    content.PagesNumber = Convert.ToInt32(dt.Rows[i]["PagesNumber"]);
+                    UserContent.Add(content);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return UserContent;
+    }
+
+    /// <summary>
+    /// שליפת מצגות שמשתמש אהב
+    /// </summary>
+    public List<Content> GetUserLikedContents(string UserName)
+    {
+        List<Content> UserLikedContent = new List<Content>();
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select C.*,U.UrlPicture as UserPic
+                              from _Content C inner join _User U on C.ByUser=U.UserNameByEmail 
+                              where ContentID in 
+                                                (select ContentID
+                                                 from _Liked
+                                                 where UserName='{UserName}')";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+                {
+                    Content content = new Content();
+                    content.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
+                    content.ContentName = dt.Rows[i]["ContentName"].ToString();
+                    content.PathFile = dt.Rows[i]["PathFile"].ToString();
+                    content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";
+                    content.ByUser = dt.Rows[i]["ByUser"].ToString();
+                    content.Description = dt.Rows[i]["Description"].ToString();
+                    content.UploadedDate = dt.Rows[i]["UploadDate"].ToString();
+                    //content.Likes = Convert.ToInt32(dt.Rows[i]["Likes"]);
+                    content.UserPic = dt.Rows[i]["UserPic"].ToString();
+                    content.PagesNumber = Convert.ToInt32(dt.Rows[i]["PagesNumber"]);
+                    UserLikedContent.Add(content);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return UserLikedContent;
+    }
+
+    public DBservices GetTOPUserLikedContent(string UserName)
+    {
+        SqlConnection con = null;
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select top 8 C.ContentName, L.Likes 
+                              from _Content C inner join
+                                         (select count(ContentID) as Likes, ContentID
+                                          from _Liked
+                                          group by ContentID) L on C.ContentID=L.ContentID
+                                          where C.ByUser='{UserName}'
+                                          order by L.Likes desc";
+            da = new SqlDataAdapter(query, con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(da);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+            }
+        }
+        return this;
     }
 }

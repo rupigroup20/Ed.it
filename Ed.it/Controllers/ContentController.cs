@@ -207,8 +207,20 @@ namespace Ed.it.Controllers
             return UserLikedContent;
         }
 
-        // DELETE api/values/5
-        public void Delete(int id)
+
+        /// <summary>
+        /// משתמש העלה תגובה יחזיר לאחר מכן רשימה מעודכנת של התגובות
+        /// </summary>
+        [HttpPost]
+        [Route("api/Content/AddComment")]
+        public List<Models.Comments> AddComment(Models.Comments comment)
+        {
+            List<Models.Comments> commentList = new List<Models.Comments>();
+            commentList = comment.AddComment();
+            return commentList;
+        }
+            // DELETE api/values/5
+            public void Delete(int id)
         {
         }
     }

@@ -268,8 +268,9 @@ namespace Ed.it.Controllers
         {
             User user = new User();
             DBservices dbs = new DBservices();
-            dbs= user.GetTOPUserLikedContent(UserName);
-            return dbs.dt ;
+            dbs = user.GetTOPUserLikedContent(UserName);
+            return dbs.dt;
+        }
         /// <summary>
         /// עדכון ניקוד עבור יוזר בעקבות צפיה בתוכן
         /// </summary>

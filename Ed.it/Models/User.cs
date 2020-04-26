@@ -30,7 +30,7 @@ namespace Ed.it.Models
 
         public User()
         {
-      
+
         }
 
 
@@ -40,9 +40,9 @@ namespace Ed.it.Models
         /// </summary>
         internal void CreateUser()
         {
-            if(UrlPicture!="")//יש תמונת פרופיל
+            if (UrlPicture != "")//יש תמונת פרופיל
             {
-                UrlPicture= Email.Split('@').First() + "." + UrlPicture.Split('\\').Last().Split('.').Last();
+                UrlPicture = Email.Split('@').First() + "." + UrlPicture.Split('\\').Last().Split('.').Last();
             }
             dBservices.CreateUser(this);
         }
@@ -53,14 +53,14 @@ namespace Ed.it.Models
         internal User GetUserDetails()
         {
             User user = new User();
-            user= dBservices.GetUserDetails(Email,Password);
-            return user;        
-         
+            user = dBservices.GetUserDetails(Email, Password);
+            return user;
+
         }
 
         public int UpdateDetails()
         {
-           int numEffected = dBservices.UpdateDetails(this);
+            int numEffected = dBservices.UpdateDetails(this);
             return numEffected;
         }
 
@@ -68,45 +68,50 @@ namespace Ed.it.Models
         {
             dBservices.UpdatePic(Email, Urlpic);
         }
+
+        /// <summary>
+        /// ///שליפת שמונת המצגות הכי אהבות של משתמש מסויים
+        /// </summary>
         public DBservices GetTOPUserLikedContent(string UserName)
         {
             return dBservices.GetTOPUserLikedContent(UserName);
+        }
 
-        /// <summary>
-        /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
-        /// </summary>
-        internal void UpdateScore(string Case,string UserName,int ContentID)
-        {
-            int Score = 0;
-            bool Update = true;
-
-            switch (Case)
+            /// <summary>
+            /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
+            /// </summary>
+            internal void UpdateScore(string Case, string UserName, int ContentID)
             {
-                case "watch":
-                    Score = 1;
-                    Update=dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID,Case);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
-                    break;
+                int Score = 0;
+                bool Update = true;
 
-                case "download":
-                    Score = 3;
-                    dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם הוריד מצגת בעבר
-                    break;
+                switch (Case)
+                {
+                    case "watch":
+                        Score = 1;
+                        Update = dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם המשתמש צפה כבר בתוכן בעבר או לא
+                        break;
 
-                case "like":
-                    Score = 2;
-                    dBservices.Like(UserName, ContentID, Case);
-                    break;
+                    case "downloaded":
+                        Score = 3;
+                        Update = dBservices.CheckIfWatchedAndDownloaded(UserName, ContentID, Case);//בודק אם הוריד מצגת בעבר
+                        break;
 
-                case "unlike":
-                    Score = -2;
-                    dBservices.Like(UserName, ContentID, Case);
-                    break;
+                    case "like":
+                        Score = 2;
+                        dBservices.Like(UserName, ContentID, Case);
+                        break;
 
-               
+                    case "unlike":
+                        Score = -2;
+                        dBservices.Like(UserName, ContentID, Case);
+                        break;
+
+
+                }
+
+                if (Update)
+                    dBservices.UpdateScore(Score, UserName, ContentID);
             }
-
-            if(Update)
-                dBservices.UpdateScore(Score, UserName,ContentID);
         }
     }
-}

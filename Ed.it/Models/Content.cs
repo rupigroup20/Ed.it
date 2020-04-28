@@ -87,7 +87,7 @@ namespace Ed.it.Models
         public List<Content> GetUserContents(string UserName)
         {
             List<Content> UserContent = new List<Content>();
-            //UserContent = dBservices.GetUserContents(UserName);
+            UserContent = dBservices.GetUserContents(UserName);
             return UserContent;
         }
 

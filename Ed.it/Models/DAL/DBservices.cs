@@ -161,35 +161,53 @@ public class DBservices
     /// </summary>
     internal User GetUserDetails(string Email, string Password)
     {
-        User user = new User();
-        con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
-        string query = $@"SELECT * 
+        try
+        {
+            User user = new User();
+            con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
+            string query = $@"SELECT * 
                           FROM _User
                           WHERE Email='{Email}' and Password='{Password}'";
-        DataTable dataTable = new DataTable();
-        da = new SqlDataAdapter(query, con);
-        SqlCommandBuilder builder = new SqlCommandBuilder(da);
-        DataSet ds = new DataSet();
-        da.Fill(ds);
-        dataTable = ds.Tables[0];
-        cmd = CreateCommand(query, con);
-        if (dataTable.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
-        {
-            //user.Name = dataTable.Rows[0]["Name"].ToString();
-            //user.UserName = dataTable.Rows[0]["UserName"].ToString();
-            user.Name = dataTable.Rows[0]["Name"].ToString();
-            user.Password = dataTable.Rows[0]["Password"].ToString();
-            user.UrlPicture = dataTable.Rows[0]["UrlPicture"].ToString();
-            user.SchoolType = dataTable.Rows[0]["SchoolType"].ToString();
-            user.TeacherType = dataTable.Rows[0]["TeacherType"].ToString();
-            user.Email = dataTable.Rows[0]["Email"].ToString();
-            user.BDate = dataTable.Rows[0]["Bdate"].ToString();
-            user.AboutMe = dataTable.Rows[0]["AboutMe"].ToString();
+            DataTable dataTable = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(da);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dataTable = ds.Tables[0];
+            cmd = CreateCommand(query, con);
+            if (dataTable.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+            {
+                //user.Name = dataTable.Rows[0]["Name"].ToString();
+                //user.UserName = dataTable.Rows[0]["UserName"].ToString();
+                user.Name = dataTable.Rows[0]["Name"].ToString();
+                user.Password = dataTable.Rows[0]["Password"].ToString();
+                user.UrlPicture = dataTable.Rows[0]["UrlPicture"].ToString();
+                user.SchoolType = dataTable.Rows[0]["SchoolType"].ToString();
+                user.TeacherType = dataTable.Rows[0]["TeacherType"].ToString();
+                user.Email = dataTable.Rows[0]["Email"].ToString();
+                user.BDate = dataTable.Rows[0]["Bdate"].ToString();
+                user.AboutMe = dataTable.Rows[0]["AboutMe"].ToString();
 
-            return user;
+                return user;
+            }
+            else
+                return null;
         }
-        else
-            return null;
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
 
     }
 
@@ -1102,5 +1120,57 @@ public class DBservices
             }
         }
         return this;
+    }
+
+    public User GetUserProfile(string UserName)
+    {
+
+        try
+        {
+            User user = new User();
+            con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
+            string query = $@"SELECT * 
+                          FROM _User
+                          WHERE UserNAmeByEmail='{UserName}'";
+            DataTable dataTable = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(da);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dataTable = ds.Tables[0];
+            cmd = CreateCommand(query, con);
+            if (dataTable.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+            {
+                //user.Name = dataTable.Rows[0]["Name"].ToString();
+                //user.UserName = dataTable.Rows[0]["UserName"].ToString();
+                user.Name = dataTable.Rows[0]["Name"].ToString();
+                user.Password = dataTable.Rows[0]["Password"].ToString();
+                user.UrlPicture = dataTable.Rows[0]["UrlPicture"].ToString();
+                user.SchoolType = dataTable.Rows[0]["SchoolType"].ToString();
+                user.TeacherType = dataTable.Rows[0]["TeacherType"].ToString();
+                user.Email = dataTable.Rows[0]["Email"].ToString();
+                user.BDate = dataTable.Rows[0]["Bdate"].ToString();
+                user.AboutMe = dataTable.Rows[0]["AboutMe"].ToString();
+
+                return user;
+            }
+            else
+                return null;
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
     }
 }

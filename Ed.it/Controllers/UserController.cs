@@ -283,6 +283,15 @@ namespace Ed.it.Controllers
             user.UpdateScore(Case, UserName,ContentID);
         }
 
+        [HttpGet]
+        [Route("api/User/GetUserProfile/{UserName}")]
+        public User GetUserProfile(string UserName)
+        {
+            User user = new User();
+            return user.GetUserProfile(UserName);
+
+        }
+
 
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)

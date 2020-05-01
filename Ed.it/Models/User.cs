@@ -113,5 +113,11 @@ namespace Ed.it.Models
                 if (Update)
                     dBservices.UpdateScore(Score, UserName, ContentID);
             }
+        public User GetUserProfile(string UserName)
+        {
+            User user = new User();
+            user = dBservices.GetUserProfile(UserName);
+            return user;
+        }
         }
     }

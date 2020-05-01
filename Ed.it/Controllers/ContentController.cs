@@ -16,7 +16,7 @@ namespace Ed.it.Controllers
 {
     public class ContentController : ApiController
     {
-        bool Local = false;//עובדים על השרת או מקומי
+        bool Local = true;//עובדים על השרת או מקומי
 
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedContents/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
@@ -61,16 +61,55 @@ namespace Ed.it.Controllers
         }
 
         /// <summary>
+        /// שליפת רשימת כל שמות המצגות
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("api/Content/GetContents")]
+        public List<string> GetContents()
+        {
+            try
+            {
+                Content content = new Content();
+                return content.GetContentList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        /// <summary>
         /// חיפוש תכנים לפי תגית
         /// </summary>
         [HttpGet]
-        [Route("api/Content/Search/{TagName}")]
+        [Route("api/Content/Search/Tags/{TagName}")]
         public List<Content> Search(string TagName)
         {
             try
             {
                 Content content = new Content();
                 return content.Search(TagName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        /// <summary>
+        /// חיפוש תכנים לפי שמות מצגות
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/Search/Contents/{Name}")]
+        public List<Content> SearchByName(string Name)
+        {
+            try
+            {
+                Content content = new Content();
+                return content.SearchByName(Name);
             }
             catch (Exception ex)
             {
@@ -109,6 +148,7 @@ namespace Ed.it.Controllers
         [Route("api/Content/UploadContent/{ByUser}/{ContentName}")]    ///
         public HttpResponseMessage UploadContent(string ByUser, string ContentName)
         {
+            Content content = new Content();
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;
 
@@ -130,7 +170,7 @@ namespace Ed.it.Controllers
                         var fileSavePath = "";
                         if (Local)
                         {
-                            fileSavePath = Path.Combine(UrlLocalAlmog, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
+                            fileSavePath = Path.Combine(UrlLocal, fname);//אם עובדים לוקלי ישמור תמונות בתיקיית פבליק של הקליינט
                         }
                         else
                         {
@@ -151,7 +191,7 @@ namespace Ed.it.Controllers
                                     // Create a full scale image
                                     Bitmap bmp = sld.GetThumbnail(1f, 1f);
 
-                                    fileSavePath = Path.Combine(UrlLocalAlmog, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
+                                    fileSavePath = Path.Combine(UrlLocal, string.Format("{0}-{1}_{2}.jpg", ContentName, ByUser, sld.SlideNumber));// $@"{Email.Split('@').First()}_{sld.SlideNumber}"
                                                                                                                                                        // Save the image to disk in JPEG format
                                     bmp.Save(fileSavePath, System.Drawing.Imaging.ImageFormat.Jpeg);
                                 }
@@ -166,14 +206,13 @@ namespace Ed.it.Controllers
                                 countPages++;
                             }
                             //עדכון מספר עמודים של התוכן בדטה בייס
-                            Content content = new Content();
-                            content.UpdatePages(countPages);
+                            content=content.UpdatePages(countPages);              
                         }
 
                     }
                 }
                 // Return status code  
-                return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
+                return Request.CreateResponse(HttpStatusCode.Created, content);
 
             }
                 return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");

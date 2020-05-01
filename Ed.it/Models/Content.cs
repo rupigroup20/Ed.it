@@ -58,7 +58,7 @@ namespace Ed.it.Models
 
 
         /// <summary>
-        /// חיפוש תכנים
+        /// חיפוש תכנים לפי תגית-אלגוריתם חכם
         /// </summary>
         internal List<Content> Search(string tagName)
         {
@@ -66,6 +66,28 @@ namespace Ed.it.Models
             ResultList = dBservices.Search(tagName);
             return ResultList;
         }
+
+
+        /// <summary>
+        /// חיפוש תוכן לפי שם מצגת
+        /// </summary>
+        internal List<Content> SearchByName(string name)
+        {
+            List<Content> ResultList = new List<Content>();
+            ResultList = dBservices.SearchByName(name);
+            return ResultList;
+        }
+
+        /// <summary>
+        /// קבלת רשימת שמות כל המצגות
+        /// </summary>
+        internal List<string> GetContentList()
+        {
+            List<string> ContentList = new List<string>();
+            ContentList = dBservices.GetContents();
+            return ContentList;
+        }
+
         /// <summary>
         /// מקבל פרטי מצגת 
         /// </summary>
@@ -79,17 +101,19 @@ namespace Ed.it.Models
         /// <summary>
         /// עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
         /// </summary>
-        internal void UpdatePages(int countPages)
+        internal Content UpdatePages(int countPages)
         {
-            dBservices.UpdatePages(countPages);
+            return dBservices.UpdatePages(countPages);
         }
 
         public List<Content> GetUserContents(string UserName)
         {
             List<Content> UserContent = new List<Content>();
-            //UserContent = dBservices.GetUserContents(UserName);
+            UserContent = dBservices.GetUserContents(UserName);
             return UserContent;
         }
+
+       
 
         public List<Content> GetUserLikedContents(string UserName)
         {

@@ -26,7 +26,7 @@ namespace Ed.it.Controllers
     //IPresentationComponent, IDisposable
     public class UserController : ApiController
     {
-        bool Local = false;//עובדים על השרת או מקומי
+        bool Local = true;//עובדים על השרת או מקומי
 
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedPictures";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedPicturesPub\\";//ניתוב מקומי
@@ -61,6 +61,22 @@ namespace Ed.it.Controllers
             {
                 TagsUser tagsUser = new TagsUser();
                 return tagsUser.GetTagsList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        [HttpGet]
+        [Route("api/User/GetUsers")]
+        public List<string> GetUsers()
+        {
+            try
+            {
+                User user= new User();
+                return user.GetUserList();
             }
             catch (Exception ex)
             {

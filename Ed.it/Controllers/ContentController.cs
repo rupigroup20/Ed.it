@@ -136,7 +136,9 @@ namespace Ed.it.Controllers
             }
             catch(Exception ex)
             {
-                response = Request.CreateResponse(HttpStatusCode.BadRequest, "Error-"+ex.Message);
+                response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Error-" + ex.Message);
+
+                //response = Request.CreateResponse(HttpStatusCode.BadRequest, "Error-"+ex.Message);
                 return response;
             }
         }

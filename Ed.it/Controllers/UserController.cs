@@ -292,6 +292,16 @@ namespace Ed.it.Controllers
 
         }
 
+        //שליפת כל היוזרים
+        [HttpGet]
+        [Route("api/User/GetUsers")]
+        public List<User> GetUsers()
+        {
+            User user = new User();
+            return user.GetUsers();
+
+        }
+
 
         // PUT api/values/5
         public void Put(int id, [FromBody]string value)

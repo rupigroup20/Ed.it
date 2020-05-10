@@ -21,7 +21,7 @@ namespace Ed.it.Controllers
         string UrlServer = "http://proj.ruppin.ac.il/igroup20/prod/uploadedContents/";//ניתוב שרת
         string UrlLocal = @"C:\Users\programmer\ed.it_client\public\uploadedFilesPub\\";//ניתוב מקומי
         string UrlLocalAlmog = @"C:\Users\almog\Desktop\final project development\client\ed.it_client\public\uploadedFilesPub\\";
-        
+
 
         /// <summary>
         /// הצעת תכנים עבור משתמש רשום
@@ -35,7 +35,7 @@ namespace Ed.it.Controllers
                 Content content = new Content();
                 return content.GetSuggestionsOfContents(UserName);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -95,7 +95,7 @@ namespace Ed.it.Controllers
                 response = Request.CreateResponse(HttpStatusCode.Created);
                 return response;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Error-" + ex.Message);
 
@@ -149,7 +149,7 @@ namespace Ed.it.Controllers
                             {
                                 if (Local)
                                 {
-                                    
+
                                     // Create a full scale image
                                     Bitmap bmp = sld.GetThumbnail(1f, 1f);
 
@@ -178,12 +178,12 @@ namespace Ed.it.Controllers
                 return Request.CreateResponse(HttpStatusCode.Created, imageLinks);
 
             }
-                return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
+            return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
         }
 
         [HttpGet]
         [Route("api/Content/GetContent/{ContentID}/{UserName}")]
-        public Content GetContent(string ContentID,string UserName)
+        public Content GetContent(string ContentID, string UserName)
         {
             Content content = new Content();
             return content.GetContent(ContentID, UserName);
@@ -191,7 +191,7 @@ namespace Ed.it.Controllers
 
         [HttpGet]
         [Route("api/Content/GetUserContents/{UserName}")]
-        public  List<Content> GetUserContents(string UserName)
+        public List<Content> GetUserContents(string UserName)
         {
             List<Content> UserContent = new List<Content>();
             Content content = new Content();
@@ -220,6 +220,14 @@ namespace Ed.it.Controllers
             List<Models.Comments> commentList = new List<Models.Comments>();
             commentList = comment.AddComment();
             return commentList;
+        }
+        //שליפת המצגות שהועלו בעשרה ימים האחרונים
+        [HttpGet]
+        [Route("api/Content/GetLatestContent/{Days}")]
+        public List<Content> GetLatestContent(string Days)
+        {
+            Content content = new Content();
+                return content.GetLatestContent(Days);
         }
             // DELETE api/values/5
             public void Delete(int id)

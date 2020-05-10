@@ -1131,7 +1131,7 @@ public class DBservices
             con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
             string query = $@"SELECT * 
                           FROM _User
-                          WHERE UserNAmeByEmail='{UserName}'";
+                          WHERE UserNameByEmail='{UserName}'";
             DataTable dataTable = new DataTable();
             da = new SqlDataAdapter(query, con);
             SqlCommandBuilder builder = new SqlCommandBuilder(da);
@@ -1172,5 +1172,113 @@ public class DBservices
 
             }
         }
+    }
+
+    //שליפת כל המשתמשים 
+    public List<User> GetUsers()
+    {
+        List<User> UsersList = new List<User>();
+
+        try
+        {
+            
+            con = Connect("DBConnectionString");                                             //שליפת זהות התוכן שהועלה עכשיו
+            string query = $@"SELECT * 
+                          FROM _User";
+            DataTable dataTable = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            SqlCommandBuilder builder = new SqlCommandBuilder(da);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dataTable = ds.Tables[0];
+            cmd = CreateCommand(query, con);
+            if (dataTable.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+            {
+                for (int i = 0; i < dataTable.Rows.Count; i++)
+                {
+                    User user = new User();
+                    user.Name = dataTable.Rows[i]["Name"].ToString();
+                    user.Password = dataTable.Rows[i]["Password"].ToString();
+                    user.Email = dataTable.Rows[i]["Email"].ToString();
+                    user.UrlPicture = dataTable.Rows[i]["UrlPicture"].ToString();
+                    user.SchoolType = dataTable.Rows[i]["SchoolType"].ToString();
+                    user.TeacherType = dataTable.Rows[i]["TeacherType"].ToString();
+                    user.BDate = dataTable.Rows[i]["Bdate"].ToString();
+                    UsersList.Add(user);
+
+                }
+            }
+            else
+                return null;
+        }
+        catch (Exception ex)
+        {
+            // write to log
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+        return UsersList;
+    }
+
+    //שליפת המצגות שהועלות בעשרה ימים האחרונים
+    public List<Content> GetLatestContent(string Days)
+    {
+        List<Content> LatestContent = new List<Content>();
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select *
+                              from _Content C inner join _User U on C.ByUser=U.UserNameByEmail
+                              where DATEDIFF(d,UploadDate,getdate())<='{Days}'";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+                {
+                    Content content = new Content();
+                    content.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
+                    content.ContentName = dt.Rows[i]["ContentName"].ToString();
+                    content.PathFile = dt.Rows[i]["PathFile"].ToString();
+                    content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";
+                    content.ByUser = dt.Rows[i]["ByUser"].ToString();
+                    content.Description = dt.Rows[i]["Description"].ToString();
+                    content.UploadedDate = dt.Rows[i]["UploadDate"].ToString();
+                    //content.Likes = Convert.ToInt32(dt.Rows[i]["Likes"]);
+                    content.UserPic = dt.Rows[i]["UrlPicture"].ToString();
+                    content.PagesNumber = Convert.ToInt32(dt.Rows[i]["PagesNumber"]);
+                    LatestContent.Add(content);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return LatestContent;
+
     }
 }

@@ -97,5 +97,11 @@ namespace Ed.it.Models
             UserLikedContent = dBservices.GetUserLikedContents(UserName);
             return UserLikedContent;
         }
+
+        //שליפת המצגות שהועלו בעשרה ימים החארונים
+        public List<Content> GetLatestContent(string Days)
+        {
+            return dBservices.GetLatestContent(Days);
+        }
     }
 }

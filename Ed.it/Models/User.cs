@@ -119,5 +119,13 @@ namespace Ed.it.Models
             user = dBservices.GetUserProfile(UserName);
             return user;
         }
+
+        //שליפת כל היוזרים 
+        public List<User> GetUsers()
+        {
+          return dBservices.GetUsers();
+
         }
+
     }
+}

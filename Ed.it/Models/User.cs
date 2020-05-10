@@ -77,6 +77,17 @@ namespace Ed.it.Models
             return dBservices.GetTOPUserLikedContent(UserName);
         }
 
+        /// <summary>
+        /// רשימת כל המשתמשים במערכת
+        /// </summary>
+        internal List<string> GetUserList()
+        {
+            List<string> UserList = new List<string>();
+            UserList = dBservices.GetUsers();
+            return UserList;
+        }
+
+   
             /// <summary>
             /// עדכון ניקוד תגיות בהתאם למקרה של המשתמש
             /// </summary>

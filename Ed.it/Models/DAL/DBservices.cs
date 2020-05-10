@@ -76,7 +76,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe}','{user.UrlPicture}','{user.Email.Split('@').First()}')";
+            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe.Replace("'", "''")}','{user.UrlPicture}','{user.Email.Split('@').First()}')";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
 
@@ -113,9 +113,9 @@ public class DBservices
     /// <summary>
     ///  עדכון מספר עמודים בדטה בייס בעת העלאת מצגת
     /// </summary>
-    internal int UpdatePages(int countPages)
+    internal Content UpdatePages(int countPages)
     {
-
+        Content content = new Content();
         try
         {
             con = Connect("DBConnectionString");
@@ -135,11 +135,23 @@ public class DBservices
             query = $@"UPDATE _Content set PagesNumber={countPages} where ContentID={contentID}";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery();
-            return numEffected;
+            //החזרת פרטי המצגת שהועלתה עכשיו
+            query = $@"SELECT PathFile,PagesNumber
+                    FROM _Content
+                    WHERE ContentID={contentID}";
+            dt = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+                content.PathFile = dt.Rows[0]["PathFile"].ToString();
+                content.PagesNumber = Convert.ToInt32(dt.Rows[0]["PagesNumber"]);
+            }
         }
         catch (Exception ex)
         {
-            return 0;
             // write to log
             throw (ex);
         }
@@ -153,6 +165,7 @@ public class DBservices
 
             }
         }
+        return content;
     }
 
 
@@ -220,7 +233,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _Content values('{content.ContentName}','{content.PathFile}','{content.ByUser}','{content.Description}','{content.UploadedDate}',0)";
+            string query = $@"INSERT INTO _Content values('{content.ContentName.Replace("'", "''")}','{content.PathFile}','{content.ByUser}','{content.Description.Replace("'", "''")}','{content.UploadedDate}',0)";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
             //שליפת זהות התוכן שהועלה עכשיו
@@ -300,6 +313,91 @@ public class DBservices
         return Tags;// מחזיר אובייקט מסוג DBServices
     }
 
+    public List<string> GetUsers()
+    {
+        List<string> Users = new List<string>();
+        SqlConnection con = null;
+        string query = "";
+        try
+        {
+            con = Connect("DBConnectionString");
+            query = $@"SELECT Name+'- '+UserNameByEmail as name
+                       FROM _User";
+            cmd = CreateCommand(query, con);
+            SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    string userName;
+                    userName = (string)dr["name"];
+                    Users.Add(userName);
+                }
+            }
+
+        }
+
+        catch (Exception ex)
+        {
+            // write errors to log file
+            // try to handle the error
+            throw ex;
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                con.Close();
+            }
+        }
+        return Users;// מחזיר אובייקט מסוג DBServices
+    }
+
+    /// <summary>
+    /// רשימת כל שמות המצגות
+    /// </summary>
+    public List<string> GetContents()
+    {
+        List<string> Contents = new List<string>();
+        SqlConnection con = null;
+        string query = "";
+        try
+        {
+            con = Connect("DBConnectionString");
+            query = $@"SELECT ContentName
+                        FROM _Content";
+            cmd = CreateCommand(query, con);
+            SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    string ContentName;
+                    ContentName = (string)dr["ContentName"];
+                    Contents.Add(ContentName);
+                }
+            }
+
+        }
+
+        catch (Exception ex)
+        {
+            // write errors to log file
+            // try to handle the error
+            throw ex;
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                con.Close();
+            }
+        }
+        return Contents;// מחזיר אובייקט מסוג DBServices
+    }
+
     public int UpdateDetails(User NewUser)
     {
         try
@@ -307,7 +405,7 @@ public class DBservices
             con = Connect("DBConnectionString");
             int numEffected = 0;
             string query = $@"UPDATE  _User
-                            SET Password='{NewUser.Password}', Name='{NewUser.Name}', TeacherType='{NewUser.TeacherType}', BDate='{NewUser.BDate}', SchoolType='{NewUser.SchoolType}', AboutMe='{NewUser.AboutMe}'
+                            SET Password='{NewUser.Password}', Name='{NewUser.Name}', TeacherType='{NewUser.TeacherType}', BDate='{NewUser.BDate}', SchoolType='{NewUser.SchoolType}', AboutMe='{NewUser.AboutMe.Replace("'", "''")}'
                             WHERE Email='{NewUser.Email}'";
             cmd = CreateCommand(query, con);
             numEffected = cmd.ExecuteNonQuery(); // execute the command
@@ -635,6 +733,65 @@ public class DBservices
         return ResultList;
     }
 
+    /// <summary>
+    /// חיפוש תכנים לפי שם 
+    /// </summary>
+    internal List<Content> SearchByName(string name)
+    {
+        Content content = new Content();
+        List<Content> ResultList = new List<Content>();//בניית רשימת התכנים המוצעים -מה שיוחזר בסוף
+        DataTable ContentTable = new DataTable();//טבלה עבור כל התכנים של התגית המבוקשת
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"SELECT C.ContentID,C.ContentName,c.PathFile,c.ByUser,C.UploadDate,C.PagesNumber,U.UrlPicture
+                           FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
+                           inner join _User U on U.UserNameByEmail=C.ByUser
+						   WHERE ContentName LIKE  '{name}%'
+                           GROUP BY C.ContentID,C.ContentName,c.PathFile,c.ByUser,C.UploadDate,C.PagesNumber,U.UrlPicture";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            ContentTable = ds.Tables[0];
+            //הוספת התכנים לטבלת התכנים
+            for (int j = 0; j < ContentTable.Rows.Count; j++)
+            {
+                //שליפת פרטים כללים על המצגת-רק להצגה 
+                if (!string.IsNullOrEmpty(ContentTable.Rows[j]["ContentID"].ToString()))
+                {
+                    content.ContentID = Convert.ToInt32(ContentTable.Rows[j]["ContentID"]);
+                    if (!ResultList.Exists(co => co.ContentID == content.ContentID))//רק אם לא מכיל כבר את התוכן
+                    {
+                        content.ContentName = ContentTable.Rows[j]["ContentName"].ToString();
+                        content.PathFile = ContentTable.Rows[j]["PathFile"].ToString();
+                        content.PathFile = content.PathFile.Split('.').First() + "_1.jpg";//מציגים את התמונה הראשונה
+                        content.UserPic = ContentTable.Rows[j]["UrlPicture"].ToString();
+                        ResultList.Add(content);
+                        content = new Content();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+
+        return ResultList;
+    }
+
+
 
     internal Content GetContent(string ContentID, string UserName)
     {
@@ -643,7 +800,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
-                              from _Content C inner join (select count( ContentID) as Likes, ContentID
+                              from _Content C left join (select count( ContentID) as Likes, ContentID
                                                           from _Liked
                                                           group by ContentID) as L on C.ContentID=L.ContentID 
                               inner join _User U on C.ByUser=U.UserNameByEmail
@@ -661,7 +818,15 @@ public class DBservices
                 content.ByUser = dt.Rows[0]["ByUser"].ToString();
                 content.Description = dt.Rows[0]["Description"].ToString();
                 content.UploadedDate = dt.Rows[0]["UploadDate"].ToString();
-                content.Likes = Convert.ToInt32(dt.Rows[0]["Likes"]);
+                if (!string.IsNullOrEmpty(dt.Rows[0]["Likes"].ToString()))
+                {
+                    content.Likes = Convert.ToInt32(dt.Rows[0]["Likes"]);
+                }
+                else
+                {
+                    content.Likes = 0;
+
+                }
                 content.UserPic = dt.Rows[0]["UserPic"].ToString();
                 content.PagesNumber = Convert.ToInt32(dt.Rows[0]["PagesNumber"]);
             }

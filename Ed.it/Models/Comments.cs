@@ -25,5 +25,17 @@ namespace Ed.it.Models
             PublishedDate = DateTime.Now.ToString("yyyy-MM-dd HH:MM:ss");
             return dBservices.AddComment(this);
         }
+
+        //שליפת כל התגובות של מצגת מסויימת עבור אדמין
+        public List<Comments> GetCommentsA(string ContentId)
+        {
+            return dBservices.GetCommentsA(ContentId);
+        }
+
+        //מחיקת תגובה ע"י אדמין
+        public int DeleteComment(int CommentID)
+        {
+           return dBservices.DeleteComment(CommentID);    
+        }
     }
 }

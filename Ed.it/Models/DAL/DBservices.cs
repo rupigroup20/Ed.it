@@ -76,7 +76,7 @@ public class DBservices
         {
             con = Connect("DBConnectionString");
             int numEffected = 0;
-            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe.Replace("'", "''")}','{user.UrlPicture}','{user.Email.Split('@').First()}')";
+            string query = $@"INSERT INTO _User values('{user.Password}','{user.Name}','{user.Email}','{user.TeacherType}','{user.BDate}','{user.SchoolType}','{user.AboutMe.Replace("'", "''")}','{user.UrlPicture}','{user.Email.Split('@').First()}',{0})";
             cmd = CreateCommand(query, con);
             numEffected += cmd.ExecuteNonQuery(); // execute the command
 
@@ -200,6 +200,7 @@ public class DBservices
                 user.Email = dataTable.Rows[0]["Email"].ToString();
                 user.BDate = dataTable.Rows[0]["Bdate"].ToString();
                 user.AboutMe = dataTable.Rows[0]["AboutMe"].ToString();
+                user.Blocked = dataTable.Rows[0]["Blocked"].ToString();
 
                 return user;
             }
@@ -872,21 +873,25 @@ public class DBservices
             }
 
             //האם המשתמש עשה לייק על התוכן בעבר
-            query = $@"SELECT *
+            if(UserName=="Guest")
+            {
+                query = $@"SELECT *
                               FROM _Liked
                               WHERE UserName='{UserName}' and ContentID={ContentID}";
-            da = new SqlDataAdapter(query, con);
-            ds = new DataSet();
-            da.Fill(ds);
-            dt = ds.Tables[0];
-            if (dt.Rows.Count == 0)
-            {
-                content.LikedByUserWhoWatch = false;
+                da = new SqlDataAdapter(query, con);
+                ds = new DataSet();
+                da.Fill(ds);
+                dt = ds.Tables[0];
+                if (dt.Rows.Count == 0)
+                {
+                    content.LikedByUserWhoWatch = false;
+                }
+                else
+                {
+                    content.LikedByUserWhoWatch = true;
+                }
             }
-            else
-            {
-                content.LikedByUserWhoWatch = true;
-            }
+           
 
         }
         catch (Exception ex)
@@ -1340,7 +1345,7 @@ public class DBservices
     }
 
     //שליפת כל המשתמשים 
-    public List<User> GetUsers()
+    public List<User> GetUsers2()
     {
         List<User> UsersList = new List<User>();
 
@@ -1369,6 +1374,7 @@ public class DBservices
                     user.SchoolType = dataTable.Rows[i]["SchoolType"].ToString();
                     user.TeacherType = dataTable.Rows[i]["TeacherType"].ToString();
                     user.BDate = dataTable.Rows[i]["Bdate"].ToString();
+                    user.Blocked = dataTable.Rows[i]["Blocked"].ToString();
                     UsersList.Add(user);
 
                 }
@@ -1445,5 +1451,119 @@ public class DBservices
 
         return LatestContent;
 
+    }
+
+    //שליפת כל התגובות של מצגת מסויימת עבור אדמין
+    public List<Comments> GetCommentsA(string ContentId)
+    {
+        List<Comments> comments = new List<Comments>();
+
+        try
+        {
+            con = Connect("DBConnectionString");
+            string query = $@"select *
+                              from _Comments
+                              where ContentID ='{ContentId}'";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                if (dt.Rows.Count != 0)//אם משתמש קיים מבצע השמה לכל השדות
+                {
+                    Comments comment = new Comments();
+                    comment.ContentID = Convert.ToInt32(dt.Rows[i]["ContentID"]);
+                    comment.NameWhoCommented = dt.Rows[i]["UserName"].ToString();
+                    comment.CommentID = Convert.ToInt32(dt.Rows[i]["CommentID"]);
+                    comment.Comment = dt.Rows[i]["Comment"].ToString();
+                    comment.PublishedDate = dt.Rows[i]["PublishDate"].ToString();
+                    comments.Add(comment);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+        return comments;
+    }
+
+    //מחיקת תגובה ע"י אדמין
+    public int DeleteComment(int CommentID)
+    {
+        try
+        {
+            int numEffected = 0;
+            con = Connect("DBConnectionString");                                             
+            string query = $@"delete from _Comments where CommentID={CommentID}";
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery();
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+    }
+
+    //חסימת או שחרור של מתשמש
+    public int Block(string UserName, string Blocked)
+    {
+        try
+        {
+            int numEffected = 0;
+            con = Connect("DBConnectionString");
+            string query = "";
+            if (Blocked == "False")
+            {
+                query = $@"update _User
+                           set Blocked='True'
+                           where UserNameByEmail='{UserName}'";
+            }
+             else
+            {
+                query = $@"update _User
+                           set Blocked='False'
+                           where UserNameByEmail='{UserName}'";
+            }
+            cmd = CreateCommand(query, con);
+            numEffected += cmd.ExecuteNonQuery();
+            return numEffected;
+        }
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
     }
 }

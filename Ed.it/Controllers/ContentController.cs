@@ -268,8 +268,28 @@ namespace Ed.it.Controllers
             Content content = new Content();
                 return content.GetLatestContent(Days);
         }
+        /// <summary>
+        /// //שליפת כל התגובות של מצגת מסויימת עבור אדמין
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/GetCommentsA/{ContentId}")]
+        public List<Comments> GetCommentsA(string ContentId)
+        {
+            Comments comment = new Comments();
+            return comment.GetCommentsA(ContentId);
+        }
+
+        //מחיקת תגובה ע"י אדמין
+        [HttpPost]
+        [Route("api/Content/DeleteComment/{CommentID}")]
+        public int DeleteComment(int CommentID)
+        {
+            Comments comment = new Comments();
+            return comment.DeleteComment(CommentID);
+        }
+
             // DELETE api/values/5
-            public void Delete(int id)
+        public void Delete(int id)
         {
         }
     }

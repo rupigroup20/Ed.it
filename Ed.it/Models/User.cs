@@ -20,7 +20,7 @@ namespace Ed.it.Models
         public string AboutMe { get; set; }
         public string UrlPicture { get; set; }
         public HttpContext FormDataPic { get; set; }
-
+        public string Blocked { get; set; }
 
         public List<Content> ContentsUser { get; set; }//תכנים שהעלה היוזר
         public List<string> TagsUser { get; set; }//תגים שהיוזר סימן כאהובים
@@ -132,10 +132,16 @@ namespace Ed.it.Models
         }
 
         //שליפת כל היוזרים 
-        public List<User> GetUsers()
+        public List<User> GetUsers2()
         {
-          return dBservices.GetUsers();
+          return dBservices.GetUsers2();
 
+        }
+
+        //חסימת או שחרור של מתשמש
+        public int Block(string UserName, string Blocked)
+        {
+            return dBservices.Block(UserName, Blocked);
         }
 
     }

@@ -1401,16 +1401,24 @@ public class DBservices
     }
 
     //שליפת המצגות שהועלות בעשרה ימים האחרונים
-    public List<Content> GetLatestContent(string Days)
+    public List<Content> GetLatestContent(string Days, string UserName)
     {
         List<Content> LatestContent = new List<Content>();
-
+        string query ="";
         try
         {
             con = Connect("DBConnectionString");
-            string query = $@"select *
+            if (UserName == "Admin")
+            {
+                query = $@"select *
                               from _Content C inner join _User U on C.ByUser=U.UserNameByEmail
                               where DATEDIFF(d,UploadDate,getdate())<='{Days}'";
+            }
+            else {
+                query = $@"select *
+                              from _Content C inner join _User U on C.ByUser=U.UserNameByEmail
+                              where ByUser='{UserName}' and DATEDIFF(d,UploadDate,getdate())<='{Days}'";
+            }
             da = new SqlDataAdapter(query, con);
             DataSet ds = new DataSet();
             da.Fill(ds);

@@ -123,9 +123,9 @@ namespace Ed.it.Models
         }
 
         //שליפת המצגות שהועלו בעשרה ימים החארונים
-        public List<Content> GetLatestContent(string Days)
+        public List<Content> GetLatestContent(string Days, string UserName)
         {
-            return dBservices.GetLatestContent(Days);
+            return dBservices.GetLatestContent(Days, UserName);
         }
     }
 }

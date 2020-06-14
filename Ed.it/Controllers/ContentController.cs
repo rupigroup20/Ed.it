@@ -262,11 +262,11 @@ namespace Ed.it.Controllers
         }
         //שליפת המצגות שהועלו בעשרה ימים האחרונים
         [HttpGet]
-        [Route("api/Content/GetLatestContent/{Days}")]
-        public List<Content> GetLatestContent(string Days)
+        [Route("api/Content/GetLatestContent/{Days}/{UserName}")]
+        public List<Content> GetLatestContent(string Days, string UserName)
         {
             Content content = new Content();
-                return content.GetLatestContent(Days);
+                return content.GetLatestContent(Days, UserName);
         }
         /// <summary>
         /// //שליפת כל התגובות של מצגת מסויימת עבור אדמין

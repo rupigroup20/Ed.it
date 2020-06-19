@@ -118,6 +118,25 @@ namespace Ed.it.Controllers
 
         }
 
+        /// <summary>
+        /// הצעת תכנים עבור אורח-דף בית עבור משתמש שלא התחבר
+        /// </summary>
+        [HttpGet]
+        [Route("api/Content/GetHolidayAlert/{Holiday}")]
+        public List<Content> GetHolidayAlert(string Holiday)
+        {
+            try
+            {
+                Content content = new Content();
+                return content.GetHolidayAlert(Holiday);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
 
         /// <summary>
         /// שמירת תוכן בעת העלאה
@@ -150,6 +169,7 @@ namespace Ed.it.Controllers
         [Route("api/Content/UploadContent/{ByUser}/{ContentName}")]    ///
         public HttpResponseMessage UploadContent(string ByUser, string ContentName)
         {
+            int countPages = 0;
             Content content = new Content();
             List<string> imageLinks = new List<string>();
             var httpContext = HttpContext.Current;
@@ -184,7 +204,7 @@ namespace Ed.it.Controllers
                         //פיצול מצגת לתמונות
                         using (Aspose.Slides.Presentation pres = new Aspose.Slides.Presentation(fileSavePath))
                         {
-                            int countPages = 0;
+                            
                             foreach (ISlide sld in pres.Slides)
                             {
                                 if (Local)
@@ -214,11 +234,15 @@ namespace Ed.it.Controllers
                     }
                 }
                 // Return status code  
-                return Request.CreateResponse(HttpStatusCode.Created, content);
+                return Request.CreateResponse(HttpStatusCode.Created, countPages);
 
             }
             return Request.CreateResponse(HttpStatusCode.Created, "שגיאה בהעלאת קובץ");
         }
+
+        //[HttpGet]
+        //[Route("api/Content/GetContentAfterUpload/{ContentID}/{UserName}")]
+
 
         [HttpGet]
         [Route("api/Content/GetContent/{ContentID}/{UserName}")]

@@ -113,7 +113,15 @@ namespace Ed.it.Models
             return UserContent;
         }
 
-       
+        /// <summary>
+        /// התראה של חג קרוב בטווח 7 ימים
+        /// </summary>
+        internal List<Content> GetHolidayAlert(string holiday)
+        {
+            List<Content> contentList = new List<Content>();
+            contentList=dBservices.GetHolidayAlert(holiday);
+            return contentList;
+        }
 
         public List<Content> GetUserLikedContents(string UserName)
         {

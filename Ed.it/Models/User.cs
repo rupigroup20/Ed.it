@@ -83,7 +83,7 @@ namespace Ed.it.Models
         internal List<string> GetUserList()
         {
             List<string> UserList = new List<string>();
-            UserList = dBservices.GetUsers();
+            UserList = dBservices.GetUsersForSearch();
             return UserList;
         }
 

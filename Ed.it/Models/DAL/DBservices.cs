@@ -169,6 +169,7 @@ public class DBservices
     }
 
 
+
     /// <summary>
     /// בודק אם משתמש קיים
     /// </summary>
@@ -313,7 +314,11 @@ public class DBservices
         return Tags;// מחזיר אובייקט מסוג DBServices
     }
 
-    public List<string> GetUsers()
+    /// <summary>
+    /// מושך רשימת משתמשים עבור מנוע חיפוש
+    /// </summary>
+    /// <returns></returns>
+    public List<string> GetUsersForSearch()
     {
         List<string> Users = new List<string>();
         SqlConnection con = null;
@@ -683,7 +688,7 @@ public class DBservices
                 //לא יוחזרו מצגות שהועלו על ידי המשתמש הנוכחי
                 query = $@" SELECT C.ContentID,C.ContentName,C.PathFile,C.ByUser,C.Description,C.UploadDate,C.PagesNumber,R.TagName,L.Likes,U.UrlPicture
                             FROM _Content C inner join _ContentRelatedTo R on C.ContentID=R.ContentID 
-                            inner join( select count(*) as Likes,ContentID
+                            left join( select count(*) as Likes,ContentID
 			                            from _Liked
 			                            group by ContentID) as L on C.ContentID=L.ContentID inner join _User U on U.UserNameByEmail=C.ByUser
                             WHERE TagName='{TagName}' 
@@ -1445,5 +1450,54 @@ public class DBservices
 
         return LatestContent;
 
+    }
+
+
+    /// <summary>
+    /// התראה של חג קרוב בטווח 7 ימים
+    /// </summary>
+    internal List<Content> GetHolidayAlert(string holiday)
+    {
+        string TagToSearch = "";
+        try
+        {
+            con = Connect("DBConnectionString");
+            holiday = holiday.Replace("'", "''");
+            string query = $@"SELECT RTRIM(TagName) as TagName
+                             FROM _Holidays
+                             WHERE LTRIM(HolidayName)='{holiday}'  ";
+            da = new SqlDataAdapter(query, con);
+            DataSet ds = new DataSet();
+            da.Fill(ds);
+            dt = new DataTable();
+            da = new SqlDataAdapter(query, con);
+            ds = new DataSet();
+            da.Fill(ds);
+            dt = ds.Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+                TagToSearch = dt.Rows[0]["TagName"].ToString();
+            }
+          
+        }
+        
+        catch (Exception ex)
+        {
+            throw (ex);
+        }
+
+        finally
+        {
+            if (con != null)
+            {
+                // close the db connection
+                con.Close();
+
+            }
+        }
+        if (TagToSearch != "")
+            return Search(TagToSearch);
+        else
+            return null;
     }
 }

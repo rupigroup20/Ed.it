@@ -70,8 +70,8 @@ namespace Ed.it.Controllers
         }
 
         [HttpGet]
-        [Route("api/User/GetUsers")]
-        public List<string> GetUsers()
+        [Route("api/User/GetUsersForSearch")]
+        public List<string> GetUsersForSearch()
         {
             try
             {

@@ -310,12 +310,21 @@ namespace Ed.it.Controllers
 
         //שליפת כל היוזרים
         [HttpGet]
-        [Route("api/User/GetUsers")]
-        public List<User> GetUsers()
+        [Route("api/User/GetUsers2")]
+        public List<User> GetUsers2()
         {
             User user = new User();
-            return user.GetUsers();
+            return user.GetUsers2();
 
+        }
+
+        //חסימת או שחרור של מתשמש
+        [HttpPost]
+        [Route("api/User/Block/{UserName}/{Blocked}")]
+        public int Block (string UserName, string Blocked)
+        {
+            User user = new User();
+            return user.Block(UserName, Blocked);
         }
 
 

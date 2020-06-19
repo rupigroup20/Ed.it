@@ -146,6 +146,7 @@ public class DBservices
             dt = ds.Tables[0];
             if (dt.Rows.Count != 0)
             {
+                content.ContentID = contentID;
                 content.PathFile = dt.Rows[0]["PathFile"].ToString();
                 content.PagesNumber = Convert.ToInt32(dt.Rows[0]["PagesNumber"]);
             }
@@ -804,15 +805,30 @@ public class DBservices
         Content content = new Content();
         try
         {
+            string query = "";
+            DataSet ds;
             con = Connect("DBConnectionString");
-            string query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
+            if (ContentID == "-1") {
+                 query = $@"SELECT max(ContentID) FROM _Content";
+                dt = new DataTable();
+                da = new SqlDataAdapter(query, con);
+                 ds = new DataSet();
+                da.Fill(ds);
+                dt = ds.Tables[0];
+                //int contentID = 0;
+                if (dt.Rows.Count != 0)
+                {
+                    ContentID = (dt.Rows[0][0]).ToString();
+                }
+            }
+             query = $@"select c.ContentID, c.ContentName, c.PathFile, c.ByUser , c.Description, c.UploadDate, L.Likes, U.UrlPicture as UserPic,c.PagesNumber
                               from _Content C left join (select count( ContentID) as Likes, ContentID
                                                           from _Liked
                                                           group by ContentID) as L on C.ContentID=L.ContentID 
                               inner join _User U on C.ByUser=U.UserNameByEmail
                               where C.ContentID='{ContentID}'";
             da = new SqlDataAdapter(query, con);
-            DataSet ds = new DataSet();
+             ds = new DataSet();
             da.Fill(ds);
             dt = ds.Tables[0];
 
